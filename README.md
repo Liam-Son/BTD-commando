@@ -25,7 +25,8 @@ BTD = 0.40·Valuation + 0.25·Momentum + 0.20·Fear + 0.10·Quality + 0.05·Risk
 | Quality | 10% | ROE & debt/equity (or proxy) |
 | Risk | 5% | Beta / vol |
 
-Full write-up: [`docs/METHODOLOGY_v1.md`](docs/METHODOLOGY_v1.md) (add from Project 2 pack if not yet on `main`).
+Full write-up: [`docs/METHODOLOGY_v1.md`](docs/METHODOLOGY_v1.md)  
+Recent notes: [`docs/PROGRESS.md`](docs/PROGRESS.md)
 
 Core implementation: [`src/lib/btd-core.ts`](src/lib/btd-core.ts)
 
@@ -59,8 +60,14 @@ npm run dev
 
 ## Research track
 
-Python parity and backtests live under private research (`quant/strategies/btd/`), version-locked to **`btd_v1_0`**.  
-Do not change weights in the app without bumping the version string on **both** TS and Python.
+Python parity and diagnostics live under private research (`quant/strategies/btd/`), version-locked to **`btd_v1_0`**.
+
+- **Product job:** dip score / ranking — not “beat buy-and-hold.”
+- **Rigor:** freeze formula · time-based IS/OS · document metrics before any weight change (new version id).
+- **Chart-proxy IC** (Yahoo, diagnostic): mild positive 21d rank IC on SPY/SLV in a 2026-09-30 study; GLD/BTC less stable. See `docs/PROGRESS.md`.
+- Do not change app weights without bumping the version string on **both** TypeScript and Python.
+
+TradingView Sniper (if published) is a **separate** Pine surface using a price proxy of the same weights — not the Lovable app binary.
 
 ---
 
