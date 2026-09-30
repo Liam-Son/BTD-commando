@@ -267,10 +267,12 @@ function Terminal() {
             <Skeleton />
           </div>
         ) : data ? (
-          <div id="rankings" /><RankingsTable
-            assets={data.assets}
-            updatedAt={new Date(liveUpdatedAt || Date.now()).toISOString()}
-          />
+          <section id="rankings">
+            <RankingsTable
+              assets={data.assets}
+              updatedAt={new Date(liveUpdatedAt || Date.now()).toISOString()}
+            />
+          </section>
         ) : null}
 
         {data && data.degraded.length > 0 && (
