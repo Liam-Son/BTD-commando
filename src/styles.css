@@ -5,17 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * BTD Commando — soft pixel military theme (original assets).
+ * Olive field + amber ROE chrome. Formula btd_v1_0 unchanged.
  */
 
 @theme inline {
@@ -25,6 +16,7 @@
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-pixel: "VT323", "JetBrains Mono", ui-monospace, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -50,35 +42,41 @@
   --color-grid: var(--grid);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-olive: var(--olive);
+  --color-sand: var(--sand);
 }
 
 :root {
-  --radius: 0.25rem;
-  --background: oklch(0.1535 0.0072 258.4);
-  --foreground: oklch(0.9357 0.0092 258.34);
-  --surface: oklch(0.1676 0.0071 258.37);
-  --surface-2: oklch(0.2168 0.0109 260.68);
-  --card: oklch(0.2168 0.0109 260.68);
-  --card-foreground: oklch(0.9357 0.0092 258.34);
-  --popover: oklch(0.2168 0.0109 260.68);
-  --popover-foreground: oklch(0.9357 0.0092 258.34);
-  --primary: oklch(0.763 0.1689 161.4);
-  --primary-foreground: oklch(0.1535 0.0072 258.4);
-  --secondary: oklch(0.2588 0.0168 259.77);
-  --secondary-foreground: oklch(0.9357 0.0092 258.34);
-  --muted: oklch(0.2588 0.0168 259.77);
-  --muted-foreground: oklch(0.6613 0.026 262.05);
-  --accent: oklch(0.2588 0.0168 259.77);
-  --accent-foreground: oklch(0.9357 0.0092 258.34);
-  --destructive: oklch(0.673 0.2146 25.04);
-  --destructive-foreground: oklch(0.9357 0.0092 258.34);
-  --border: oklch(0.2588 0.0168 259.77);
-  --input: oklch(0.2588 0.0168 259.77);
-  --ring: oklch(0.763 0.1689 161.4);
-  --up: oklch(0.763 0.1689 161.4);
-  --down: oklch(0.673 0.2146 25.04);
-  --warn: oklch(0.8131 0.165 75.04);
-  --grid: oklch(0.302 0.0288 244.82);
+  --radius: 0.125rem;
+  /* Soft olive night ops — warmer than pure slate */
+  --background: oklch(0.18 0.025 130);
+  --foreground: oklch(0.92 0.02 95);
+  --surface: oklch(0.21 0.028 135);
+  --surface-2: oklch(0.26 0.032 140);
+  --card: oklch(0.24 0.03 138);
+  --card-foreground: oklch(0.92 0.02 95);
+  --popover: oklch(0.24 0.03 138);
+  --popover-foreground: oklch(0.92 0.02 95);
+  /* Amber brass primary (mockup yellow tabs) */
+  --primary: oklch(0.84 0.14 95);
+  --primary-foreground: oklch(0.18 0.03 130);
+  --secondary: oklch(0.28 0.03 140);
+  --secondary-foreground: oklch(0.9 0.02 95);
+  --muted: oklch(0.28 0.03 140);
+  --muted-foreground: oklch(0.7 0.03 120);
+  --accent: oklch(0.32 0.04 145);
+  --accent-foreground: oklch(0.92 0.02 95);
+  --destructive: oklch(0.62 0.2 25);
+  --destructive-foreground: oklch(0.95 0.02 95);
+  --border: oklch(0.35 0.04 130);
+  --input: oklch(0.3 0.035 135);
+  --ring: oklch(0.84 0.14 95);
+  --up: oklch(0.72 0.16 145);
+  --down: oklch(0.62 0.2 25);
+  --warn: oklch(0.82 0.15 85);
+  --grid: oklch(0.32 0.04 145);
+  --olive: oklch(0.42 0.06 140);
+  --sand: oklch(0.78 0.06 95);
 }
 
 @layer base {
@@ -95,12 +93,53 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    background-image:
+      linear-gradient(180deg, oklch(0.16 0.03 130 / 0.9), oklch(0.2 0.025 135 / 0.95)),
+      radial-gradient(ellipse 80% 40% at 50% -10%, oklch(0.35 0.05 95 / 0.25), transparent);
+    background-attachment: fixed;
+  }
+
+  img.pixel,
+  .pixel {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
   }
 }
 
 @utility tabular {
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono);
+}
+
+@utility pixel-title {
+  font-family: var(--font-pixel);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  image-rendering: pixelated;
+}
+
+@utility mil-panel {
+  border: 2px solid color-mix(in oklab, var(--primary) 45%, var(--border));
+  background: color-mix(in oklab, var(--surface) 92%, black);
+  box-shadow:
+    0 0 0 1px oklch(0.12 0.02 130 / 0.8),
+    inset 0 1px 0 oklch(1 0 0 / 0.04);
+}
+
+@utility mil-tab {
+  font-family: var(--font-pixel);
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 2px solid transparent;
+  padding: 0.25rem 0.65rem;
+}
+
+@utility mil-tab-active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  box-shadow: 0 0 12px color-mix(in oklab, var(--primary) 25%, transparent);
 }
 
 @utility ticker-track {
@@ -156,3 +195,33 @@
   animation: btd-pulse 1.8s ease-in-out infinite;
 }
 
+/* Signal chips — UI only; not order instructions */
+@utility sig-acquire {
+  background: oklch(0.45 0.18 25 / 0.85);
+  color: oklch(0.97 0.02 95);
+  border: 2px solid oklch(0.55 0.2 25);
+}
+
+@utility sig-hot {
+  background: oklch(0.55 0.18 35 / 0.75);
+  color: oklch(0.97 0.02 95);
+  border: 2px solid oklch(0.65 0.18 40);
+}
+
+@utility sig-watch {
+  background: oklch(0.55 0.14 95 / 0.8);
+  color: oklch(0.18 0.03 130);
+  border: 2px solid oklch(0.75 0.14 95);
+}
+
+@utility sig-track {
+  background: oklch(0.4 0.08 230 / 0.55);
+  color: oklch(0.9 0.04 230);
+  border: 2px solid oklch(0.55 0.1 230);
+}
+
+@utility sig-stand {
+  background: oklch(0.3 0.02 130 / 0.9);
+  color: oklch(0.7 0.02 130);
+  border: 2px solid oklch(0.4 0.03 130);
+}
