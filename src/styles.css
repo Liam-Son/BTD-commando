@@ -92,7 +92,7 @@
     background-image:
       radial-gradient(ellipse 100% 50% at 50% -20%, oklch(0.35 0.06 90 / 0.18), transparent 55%),
       linear-gradient(180deg, oklch(0.16 0.03 145), oklch(0.12 0.02 145));
-    background-attachment: fixed;
+    /* no fixed bg — avoids scroll smear */
   }
 
   .pixel,
