@@ -9,6 +9,7 @@ import { RankingsTable } from "@/components/btd/RankingsTable";
 import { RatingBadge } from "@/components/btd/RatingBadge";
 import { BacktestChart } from "@/components/btd/BacktestChart";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
+import { SniperHero } from "@/components/btd/SniperHero";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,10 +27,10 @@ export const Route = createFileRoute("/")({
           "Top 30 global buying opportunities scored 0-100 on fear, drawdown, momentum, mean reversion, trend quality and risk.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://dip-finder-score.lovable.app/" },
+      { property: "og:url", content: "https://btd.noviark.net/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://dip-finder-score.lovable.app/" }],
+    links: [{ rel: "canonical", href: "https://btd.noviark.net/" }],
   }),
   component: Terminal,
 });
@@ -160,8 +161,9 @@ function Terminal() {
       {data && <Ticker assets={data.assets} />}
 
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
+        <SniperHero />
         <section className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
-          <div className="rounded border border-border bg-surface p-6">
+          <div className="mil-panel p-6">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
               Methodology
             </p>
@@ -195,9 +197,9 @@ function Terminal() {
             </div>
           </div>
 
-          <div className="rounded border border-border bg-surface p-6">
+          <div className="mil-panel p-6">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Highest conviction right now
+              Market radar · top target
             </p>
             {top ? (
               <>
@@ -265,7 +267,7 @@ function Terminal() {
             <Skeleton />
           </div>
         ) : data ? (
-          <RankingsTable
+          <div id="rankings" /><RankingsTable
             assets={data.assets}
             updatedAt={new Date(liveUpdatedAt || Date.now()).toISOString()}
           />
