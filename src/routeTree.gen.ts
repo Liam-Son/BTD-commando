@@ -16,6 +16,7 @@ import { Route as CryptoRouteImport } from './routes/crypto'
 import { Route as IndexDothtmlRouteImport } from './routes/index[.]html'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StocksRouteImport } from './routes/stocks'
+import { Route as SergeantRouteImport } from './routes/sergeant'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 
 const IndexRoute = IndexRouteImport.update({
@@ -52,6 +53,11 @@ const StocksRoute = StocksRouteImport.update({
   path: '/stocks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SergeantRoute = SergeantRouteImport.update({
+  id: '/sergeant',
+  path: '/sergeant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/index.html': typeof IndexDothtmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
+  '/sergeant': typeof SergeantRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRoutesByTo {
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/index.html': typeof IndexDothtmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
+  '/sergeant': typeof SergeantRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRoutesById {
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/index.html': typeof IndexDothtmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
+  '/sergeant': typeof SergeantRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRouteTypes {
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/index.html'
     | '/sitemap.xml'
     | '/stocks'
+    | '/sergeant'
     | '/portfolio'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
     | '/index.html'
     | '/sitemap.xml'
     | '/stocks'
+    | '/sergeant'
     | '/portfolio'
   id:
     | '__root__'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '/index.html'
     | '/sitemap.xml'
     | '/stocks'
+    | '/sergeant'
     | '/_authenticated/portfolio'
   fileRoutesById: FileRoutesById
 }
@@ -126,6 +138,7 @@ export interface RootRouteChildren {
   IndexDothtmlRoute: typeof IndexDothtmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StocksRoute: typeof StocksRoute
+  SergeantRoute: typeof SergeantRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -179,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StocksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sergeant': {
+      id: '/sergeant'
+      path: '/sergeant'
+      fullPath: '/sergeant'
+      preLoaderRoute: typeof SergeantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/portfolio': {
       id: '/_authenticated/portfolio'
       path: '/portfolio'
@@ -208,6 +228,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexDothtmlRoute: IndexDothtmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StocksRoute: StocksRoute,
+  SergeantRoute: SergeantRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
