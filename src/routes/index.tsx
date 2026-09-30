@@ -8,17 +8,18 @@ import { FearPanel } from "@/components/btd/FearPanel";
 import { RankingsTable } from "@/components/btd/RankingsTable";
 import { RatingBadge } from "@/components/btd/RatingBadge";
 import { BacktestChart } from "@/components/btd/BacktestChart";
+import { CommandoHeader } from "@/components/btd/CommandoHeader";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "BTD Index™ — Live Buy-the-Dip Rankings for 60+ Global Assets" },
+      { title: "BTD Commando — Sniper board · Live Buy-the-Dip Rankings" },
       {
         name: "description",
         content:
           "Live BTD Score rankings across US stocks, crypto, ETFs, commodities and indices. Fear, drawdown, momentum and risk engines refreshed every 5 minutes.",
       },
-      { property: "og:title", content: "BTD Index™ — Quantitative Buy-the-Dip Terminal" },
+      { property: "og:title", content: "BTD Commando — Sniper scores the dip" },
       {
         property: "og:description",
         content:
@@ -133,38 +134,11 @@ function Terminal() {
 
   return (
     <main className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3">
-          <div className="flex items-baseline gap-3">
-            <h1 className="flex items-baseline gap-3 text-lg font-bold tracking-tight">
-              <span>
-                BTD<span className="text-primary">.</span>Index
-                <span className="align-super text-[9px] text-muted-foreground">™</span>
-              </span>
-              <span className="hidden text-[11px] font-medium uppercase tracking-widest text-muted-foreground sm:inline">
-                Quantitative Buy-the-Dip Terminal
-              </span>
-            </h1>
-          </div>
-          <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
-            <Link
-              to="/stocks"
-              className="rounded-sm border border-border px-2 py-1 hover:text-foreground"
-            >
-              Stocks to buy on the dip
-            </Link>
-            <Link
-              to="/crypto"
-              className="rounded-sm border border-border px-2 py-1 hover:text-foreground"
-            >
-              Crypto to buy on the dip
-            </Link>
-            <Link
-              to={user ? "/portfolio" : "/auth"}
-              className="rounded-sm border border-border px-2 py-1 hover:text-foreground"
-            >
-              {user ? "My portfolio" : "Sign in"}
-            </Link>
+      <CommandoHeader
+        active="sniper"
+        signedIn={!!user}
+        status={
+          <>
             <span className="flex items-center gap-1.5">
               <span
                 className={`h-1.5 w-1.5 rounded-full ${isRefreshingLive ? "live-dot bg-warn" : isLive ? "bg-up" : "bg-muted-foreground"}`}
@@ -179,9 +153,9 @@ function Terminal() {
                 Full cycle <Countdown updatedAt={data.updatedAt} />
               </span>
             )}
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {data && <Ticker assets={data.assets} />}
 
@@ -304,7 +278,7 @@ function Terminal() {
         )}
 
         <footer className="border-t border-border pt-4 text-[11px] leading-relaxed text-muted-foreground">
-          BTD Index™ — data from CoinGecko, Yahoo Finance and alternative.me. Scores are
+          BTD Commando · Sniper board — data from CoinGecko, Yahoo Finance and alternative.me. Scores are
           quantitative research signals and never a guarantee of future returns. Not investment
           advice.
         </footer>
