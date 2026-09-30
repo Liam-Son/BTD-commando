@@ -5,15 +5,15 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * BTD Commando — soft pixel military theme (original assets).
- * Olive field + amber ROE chrome. Formula btd_v1_0 unchanged.
+ * BTD Commando UI kit — soft 2D pixel military (mock board v2).
+ * Original assets only. Formula btd_v1_0 locked. Score ≠ order.
  */
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 2px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 0px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 4px;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   --font-pixel: "VT323", "JetBrains Mono", ui-monospace, monospace;
@@ -42,41 +42,37 @@
   --color-grid: var(--grid);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
-  --color-olive: var(--olive);
-  --color-sand: var(--sand);
 }
 
 :root {
-  --radius: 0.125rem;
-  /* Soft olive night ops — warmer than pure slate */
-  --background: oklch(0.18 0.025 130);
-  --foreground: oklch(0.92 0.02 95);
-  --surface: oklch(0.21 0.028 135);
-  --surface-2: oklch(0.26 0.032 140);
-  --card: oklch(0.24 0.03 138);
-  --card-foreground: oklch(0.92 0.02 95);
-  --popover: oklch(0.24 0.03 138);
-  --popover-foreground: oklch(0.92 0.02 95);
-  /* Amber brass primary (mockup yellow tabs) */
-  --primary: oklch(0.84 0.14 95);
-  --primary-foreground: oklch(0.18 0.03 130);
-  --secondary: oklch(0.28 0.03 140);
+  --radius: 2px;
+  /* Mock: near-black olive ops desk */
+  --background: oklch(0.14 0.02 145);
+  --foreground: oklch(0.93 0.02 95);
+  --surface: oklch(0.17 0.022 145);
+  --surface-2: oklch(0.21 0.025 145);
+  --card: oklch(0.18 0.022 145);
+  --card-foreground: oklch(0.93 0.02 95);
+  --popover: oklch(0.18 0.022 145);
+  --popover-foreground: oklch(0.93 0.02 95);
+  /* Brass / amber like mock yellow frames */
+  --primary: oklch(0.86 0.15 95);
+  --primary-foreground: oklch(0.14 0.02 145);
+  --secondary: oklch(0.24 0.03 145);
   --secondary-foreground: oklch(0.9 0.02 95);
-  --muted: oklch(0.28 0.03 140);
-  --muted-foreground: oklch(0.7 0.03 120);
-  --accent: oklch(0.32 0.04 145);
-  --accent-foreground: oklch(0.92 0.02 95);
-  --destructive: oklch(0.62 0.2 25);
-  --destructive-foreground: oklch(0.95 0.02 95);
-  --border: oklch(0.35 0.04 130);
-  --input: oklch(0.3 0.035 135);
-  --ring: oklch(0.84 0.14 95);
-  --up: oklch(0.72 0.16 145);
-  --down: oklch(0.62 0.2 25);
-  --warn: oklch(0.82 0.15 85);
-  --grid: oklch(0.32 0.04 145);
-  --olive: oklch(0.42 0.06 140);
-  --sand: oklch(0.78 0.06 95);
+  --muted: oklch(0.24 0.03 145);
+  --muted-foreground: oklch(0.68 0.03 130);
+  --accent: oklch(0.28 0.04 145);
+  --accent-foreground: oklch(0.93 0.02 95);
+  --destructive: oklch(0.58 0.2 25);
+  --destructive-foreground: oklch(0.97 0.01 95);
+  --border: oklch(0.32 0.04 140);
+  --input: oklch(0.22 0.03 145);
+  --ring: oklch(0.86 0.15 95);
+  --up: oklch(0.72 0.17 145);
+  --down: oklch(0.6 0.2 25);
+  --warn: oklch(0.84 0.14 90);
+  --grid: oklch(0.28 0.05 145);
 }
 
 @layer base {
@@ -94,13 +90,13 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     background-image:
-      linear-gradient(180deg, oklch(0.16 0.03 130 / 0.9), oklch(0.2 0.025 135 / 0.95)),
-      radial-gradient(ellipse 80% 40% at 50% -10%, oklch(0.35 0.05 95 / 0.25), transparent);
+      radial-gradient(ellipse 100% 50% at 50% -20%, oklch(0.35 0.06 90 / 0.18), transparent 55%),
+      linear-gradient(180deg, oklch(0.16 0.03 145), oklch(0.12 0.02 145));
     background-attachment: fixed;
   }
 
-  img.pixel,
-  .pixel {
+  .pixel,
+  img.pixel {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
   }
@@ -113,33 +109,33 @@
 
 @utility pixel-title {
   font-family: var(--font-pixel);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  image-rendering: pixelated;
 }
 
 @utility mil-panel {
-  border: 2px solid color-mix(in oklab, var(--primary) 45%, var(--border));
-  background: color-mix(in oklab, var(--surface) 92%, black);
+  border: 2px solid color-mix(in oklab, var(--primary) 35%, var(--border));
+  background: color-mix(in oklab, var(--surface) 96%, black);
   box-shadow:
-    0 0 0 1px oklch(0.12 0.02 130 / 0.8),
+    0 0 0 1px oklch(0.08 0.02 145 / 0.9),
     inset 0 1px 0 oklch(1 0 0 / 0.04);
 }
 
 @utility mil-tab {
   font-family: var(--font-pixel);
-  font-size: 1.05rem;
-  letter-spacing: 0.08em;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   border: 2px solid transparent;
-  padding: 0.25rem 0.65rem;
+  padding: 0.35rem 0.75rem;
+  line-height: 1;
 }
 
 @utility mil-tab-active {
   border-color: var(--primary);
   color: var(--primary);
-  background: color-mix(in oklab, var(--primary) 12%, transparent);
-  box-shadow: 0 0 12px color-mix(in oklab, var(--primary) 25%, transparent);
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+  box-shadow: 0 0 16px color-mix(in oklab, var(--primary) 22%, transparent);
 }
 
 @utility ticker-track {
@@ -195,33 +191,65 @@
   animation: btd-pulse 1.8s ease-in-out infinite;
 }
 
-/* Signal chips — UI only; not order instructions */
+/* Mock legend chips */
 @utility sig-acquire {
-  background: oklch(0.45 0.18 25 / 0.85);
-  color: oklch(0.97 0.02 95);
-  border: 2px solid oklch(0.55 0.2 25);
+  background: oklch(0.52 0.2 25);
+  color: oklch(0.98 0.01 95);
+  border: 2px solid oklch(0.62 0.2 25);
+  font-weight: 800;
 }
 
 @utility sig-hot {
-  background: oklch(0.55 0.18 35 / 0.75);
-  color: oklch(0.97 0.02 95);
-  border: 2px solid oklch(0.65 0.18 40);
+  background: oklch(0.58 0.18 40);
+  color: oklch(0.98 0.01 95);
+  border: 2px solid oklch(0.68 0.16 45);
+  font-weight: 800;
 }
 
 @utility sig-watch {
-  background: oklch(0.55 0.14 95 / 0.8);
-  color: oklch(0.18 0.03 130);
-  border: 2px solid oklch(0.75 0.14 95);
+  background: oklch(0.78 0.15 95);
+  color: oklch(0.16 0.03 145);
+  border: 2px solid oklch(0.88 0.14 95);
+  font-weight: 800;
 }
 
 @utility sig-track {
-  background: oklch(0.4 0.08 230 / 0.55);
-  color: oklch(0.9 0.04 230);
-  border: 2px solid oklch(0.55 0.1 230);
+  background: oklch(0.45 0.1 230);
+  color: oklch(0.95 0.03 230);
+  border: 2px solid oklch(0.55 0.12 230);
+  font-weight: 800;
 }
 
 @utility sig-stand {
-  background: oklch(0.3 0.02 130 / 0.9);
-  color: oklch(0.7 0.02 130);
-  border: 2px solid oklch(0.4 0.03 130);
+  background: oklch(0.32 0.02 145);
+  color: oklch(0.72 0.02 145);
+  border: 2px solid oklch(0.42 0.03 145);
+  font-weight: 800;
+}
+
+/* Full-bleed hero art from mock board crops */
+.hero-sniper-art {
+  background-image: url(/theme/btd-ui-mockup.png);
+  background-repeat: no-repeat;
+  background-size: 210% auto;
+  background-position: 4% 18%;
+  image-rendering: pixelated;
+}
+
+.hero-sergeant-art {
+  background-image: url(/theme/btd-ui-mockup.png);
+  background-repeat: no-repeat;
+  background-size: 210% auto;
+  background-position: 4% 72%;
+  image-rendering: pixelated;
+}
+
+.ops-sky-strip {
+  background-image:
+    linear-gradient(180deg, oklch(0.22 0.04 230 / 0.35), oklch(0.14 0.02 145 / 0.95)),
+    url(/theme/btd-ui-mockup.png);
+  background-size: auto, 120% auto;
+  background-position: center, 50% 0%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
 }
