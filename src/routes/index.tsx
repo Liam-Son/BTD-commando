@@ -10,6 +10,7 @@ import { RatingBadge } from "@/components/btd/RatingBadge";
 import { BacktestChart } from "@/components/btd/BacktestChart";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { SniperHero } from "@/components/btd/SniperHero";
+import { MarketRadar } from "@/components/btd/MarketRadar";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -162,6 +163,9 @@ function Terminal() {
 
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
         <SniperHero />
+        {data && (
+          <MarketRadar assets={data.assets} updatedAt={new Date(liveUpdatedAt || Date.now()).toISOString()} />
+        )}
         <section className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
           <div className="mil-panel p-6">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">

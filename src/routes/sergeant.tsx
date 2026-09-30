@@ -4,6 +4,7 @@ import { ratingFor } from "@/lib/btd-core";
 import { useLiveRankings } from "@/hooks/useLiveRankings";
 import { useAuth } from "@/hooks/useAuth";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
+import { SergeantHero } from "@/components/btd/SergeantHero";
 import {
   BTD_FORMULA_ID,
   SERGEANT_POLICY_ID,
@@ -245,7 +246,11 @@ function SergeantPage() {
         }
       />
 
-      <div className="mx-auto max-w-[1200px] space-y-4 px-4 py-6">
+      <div className="mx-auto max-w-[1600px] space-y-4 px-4 pt-6">
+        <SergeantHero />
+      </div>
+
+      <div id="paper-book" className="mx-auto max-w-[1200px] space-y-4 px-4 py-6">
         <section className="rounded border border-border bg-surface p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
