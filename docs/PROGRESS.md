@@ -1,15 +1,16 @@
 # Progress notes
 
-Short log of research / product work on **BTD Index™**. Score lock remains **`btd_v1_0`**.
+Short log of research / product work on **BTD Commando** (score surface still **BTD Index™** / `btd_v1_0`).
 
 ## 2026-09-30
 
 ### Product
 - Methodology v1.0 published under `docs/METHODOLOGY_v1.md`.
 - README clarified: BTD is a **dip attractiveness score** (0–100), not investment advice.
+- **Commando doctrine** locked: `docs/COMMANDO_DOCTRINE.md` (Sniper sees · Sergeant paper · you promote live).
+- **P1 web shell on `main`:** `CommandoHeader`, home as Sniper board, `/sergeant` paper desk + routeTree. Formula untouched.
 - In-app “growth of 100” rule (≥65 / ≤35) stays **illustrative**, not a promoted edge.
 - TradingView **Sniper** HUD is a **separate** Pine surface (chart-proxy of the same weights). Not wired to Lovable sync.
-- Optional hard-mil **HUD preview** is cosmetic mock only (not live terminal chrome yet).
 
 ### Research rigor
 - Adopted a freeze / IS–OS / promotion protocol so “verified” means more than a dashboard screenshot.
@@ -32,7 +33,8 @@ Adding gold/silver/BTC to a **binary timer** did **not** beat buy-and-hold on il
 - Buy-and-hold can outperform sparse dip timers on total return — expected and disclosed.
 
 ### Next (gentle)
-- [ ] Optional mil theme pass on the live web UI (Lovable), without changing `btd_v1_0`.
+- [ ] Confirm Lovable rebuild picks up Commando P1 (header + `/sergeant`).
+- [ ] Optional mil theme pass without changing `btd_v1_0`.
 - [ ] Keep Python parity path under private research in sync when weights ever change (new version id).
 - [ ] Free TradingView publish of Sniper as score tool when ready (open/protected).
 
