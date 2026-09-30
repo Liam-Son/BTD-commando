@@ -1,0 +1,92 @@
+// BTD Commando — Sniper (TradingView chart proxy)
+// Formula id: btd_v1_0  ·  DO NOT change weights without a new version id
+// Platform: BTD Commando · Indicator: Sniper · Paper RA: Sergeant (separate)
+// Canonical multi-asset engine: https://github.com/Liam-Son/BTD-index (web TS)
+// This Pine script is a SINGLE-SYMBOL price proxy (not peer P/E / not Fear&Greed API).
+// Score ≠ order. Research only. Not investment advice.
+// SoT path: pine/BTD_Sniper.pine on Liam-Son/BTD-index
+//
+//@version=6
+indicator("BTD Commando Sniper", shorttitle="BTD SNIPER", overlay=false, precision=1,
+     explicit_plot_zorder=true)
+
+// --- theme (mil HUD, readable) ---
+colOd   = #4A7C3F
+colSand = #C2A878
+colIr   = #E6A817
+colNv   = #7CFFB2
+colHot  = #FF4D3A
+
+// --- inputs ---
+buyTh  = input.int(65, "ACQUIRE ≥", minval=1, maxval=99, group="ROE flags")
+sellTh = input.int(35, "STAND DOWN ≤", minval=1, maxval=99, group="ROE flags")
+lenRsi = input.int(14, "RSI length", minval=2, group="Proxy windows")
+lenHi  = input.int(252, "High lookback", minval=20, group="Proxy windows")
+lenVol = input.int(20, "Vol / ATR length", minval=5, group="Proxy windows")
+lenMa  = input.int(200, "Structure MA", minval=20, group="Proxy windows")
+
+// chart-proxy shrink toward 50 (web engine has richer factors)
+proxyShr = 0.55
+
+clamp(x, lo, hi) =>
+    math.min(hi, math.max(lo, x))
+
+norm(x, lo, hi) =>
+    hi == lo ? 50.0 : clamp((x - lo) / (hi - lo) * 100.0, 0.0, 100.0)
+
+shrink(raw) =>
+    50.0 + (raw - 50.0) * proxyShr
+
+// V — depth below N-bar high (cheapness / drawdown proxy)
+hiN = ta.highest(high, lenHi)
+dd  = hiN > 0 ? (close - hiN) / hiN * 100.0 : 0.0
+V   = shrink(norm(-dd, 0.0, 40.0))
+
+// M — RSI oversold map
+rsi = ta.rsi(close, lenRsi)
+M   = na(rsi) ? 50.0 : clamp(((70.0 - rsi) / 50.0) * 100.0, 0.0, 100.0)
+
+// F — ATR% stress vs recent median
+atrP   = close > 0 ? ta.atr(lenVol) / close * 100.0 : 0.0
+atrMed = ta.percentile_nearest_rank(atrP, 100, 50)
+F      = shrink(norm(atrP, atrMed * 0.6, atrMed * 2.2))
+
+// Q — structure vs long MA
+ma    = ta.sma(close, lenMa)
+dist  = ma > 0 ? (close - ma) / ma * 100.0 : 0.0
+qBase = norm(-dist, -5.0, 25.0)
+Q     = shrink(ma > ma[5] ? qBase : qBase * 0.85)
+
+// R — inverse realized vol
+ret = ta.change(math.log(math.max(close, 1e-10)))
+vol = ta.stdev(ret, lenVol) * math.sqrt(252.0) * 100.0
+R   = clamp(100.0 - norm(vol, 10.0, 80.0), 0.0, 100.0)
+
+// --- btd_v1_0 weights (locked) ---
+BTD = clamp(0.40 * V + 0.25 * M + 0.20 * F + 0.10 * Q + 0.05 * R, 0.0, 100.0)
+
+isAcq = BTD >= buyTh
+isSd  = BTD <= sellTh
+xAcq  = ta.crossover(BTD, buyTh)
+xSd   = ta.crossunder(BTD, sellTh)
+tone  = isAcq ? colNv : isSd ? colHot : BTD >= 50 ? colIr : colSand
+
+pS = plot(BTD, "BTD SCORE", color=tone, linewidth=3)
+pZ = plot(0.0, display=display.none)
+fill(pS, pZ, color=isAcq ? color.new(colNv, 82) : color.new(colOd, 88))
+
+hline(buyTh, "ACQUIRE", color=color.new(colNv, 20), linestyle=hline.style_dashed)
+hline(50.0, "MID", color=color.new(colSand, 50), linestyle=hline.style_dotted)
+hline(sellTh, "STAND DOWN", color=color.new(colHot, 15), linestyle=hline.style_dashed)
+
+plot(V, "V cheap", color=color.new(colOd, 70))
+plot(M, "M oversold", color=color.new(colIr, 65))
+plot(F, "F stress", color=color.new(colHot, 75))
+
+plotshape(xAcq, title="ACQ", style=shape.triangleup, location=location.bottom, color=colNv, size=size.small, text="ACQ", textcolor=colNv)
+plotshape(xSd, title="SD", style=shape.triangledown, location=location.top, color=colHot, size=size.small, text="SD", textcolor=colHot)
+
+bgcolor(isAcq ? color.new(colNv, 94) : na)
+
+alertcondition(xAcq, title="BTD Target Acquired", message="BTD Sniper ACQUIRE — research flag only, not an order")
+alertcondition(xSd, title="BTD Stand Down", message="BTD Sniper STAND DOWN — research flag only")
