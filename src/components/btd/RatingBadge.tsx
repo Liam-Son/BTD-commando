@@ -1,5 +1,27 @@
 import { ratingFor, type RatingTone } from "@/lib/btd-core";
 
+/**
+ * Military UI signal bands (display only — not orders).
+ * Aligns with theme mock legend; internal RATINGS labels stay for methodology.
+ */
+export type MilSignal = "ACQUIRE" | "HOT" | "WATCH" | "TRACK" | "STAND DOWN";
+
+export function milSignalFor(score: number): MilSignal {
+  if (score >= 90) return "ACQUIRE";
+  if (score >= 75) return "HOT";
+  if (score >= 50) return "WATCH";
+  if (score >= 25) return "TRACK";
+  return "STAND DOWN";
+}
+
+const MIL_CLASS: Record<MilSignal, string> = {
+  ACQUIRE: "sig-acquire",
+  HOT: "sig-hot",
+  WATCH: "sig-watch",
+  TRACK: "sig-track",
+  "STAND DOWN": "sig-stand",
+};
+
 const TONE_CLASS: Record<RatingTone, string> = {
   extreme: "bg-up/20 text-up border-up/50",
   exceptional: "bg-up/15 text-up border-up/35",
@@ -11,7 +33,21 @@ const TONE_CLASS: Record<RatingTone, string> = {
   avoid: "bg-down/15 text-down border-down/35",
 };
 
+/** Pixel-style mission signal chip (primary UI). */
 export function RatingBadge({ score }: { score: number }) {
+  const sig = milSignalFor(score);
+  return (
+    <span
+      className={`inline-flex items-center gap-1 whitespace-nowrap px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${MIL_CLASS[sig]}`}
+      title={`Research signal · ${ratingFor(score).label} · not an order`}
+    >
+      {sig}
+    </span>
+  );
+}
+
+/** Optional classic methodology label */
+export function MethodologyBadge({ score }: { score: number }) {
   const rating = ratingFor(score);
   return (
     <span
@@ -23,13 +59,17 @@ export function RatingBadge({ score }: { score: number }) {
 }
 
 export function ScoreCell({ score }: { score: number }) {
+  const sig = milSignalFor(score);
   return (
     <div className="flex items-center justify-end gap-2">
-      <div className="hidden h-1 w-16 overflow-hidden rounded-full bg-secondary sm:block">
-        <div className="score-bar h-full" style={{ width: `${score}%` }} />
+      <div className="hidden h-1.5 w-16 overflow-hidden border border-border/80 bg-secondary sm:block">
+        <div className="score-bar h-full" style={{ width: `${Math.min(100, Math.max(0, score))}%` }} />
       </div>
       <span className="tabular w-12 text-right text-sm font-bold text-foreground">
         {score.toFixed(1)}
+      </span>
+      <span className={`hidden px-1 text-[9px] font-bold uppercase md:inline ${MIL_CLASS[sig]}`}>
+        {sig}
       </span>
     </div>
   );
