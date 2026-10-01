@@ -6,6 +6,7 @@ type NewsItem = {
   url: string;
   publisher: string;
   publishedAt: string;
+  summary?: string;
   categories: string[];
   tickers: string[];
   attentionScore: number;
@@ -103,6 +104,10 @@ export function NewsFeed({
   const criticalCount = items.filter((item) => item.severity === "critical").length;
   const sourceCount = Object.keys(health).length;
   const healthyCount = Object.values(health).filter((source) => source.ok).length;
+  const categoryCounts = items.reduce<Record<string, number>>((counts, item) => {
+    for (const category of item.categories) counts[category] = (counts[category] ?? 0) + 1;
+    return counts;
+  }, {});
 
   return (
     <section id="news-intelligence" className="mil-panel scroll-mt-24 p-4 sm:p-5" aria-labelledby="intel-feed-title">
@@ -112,7 +117,9 @@ export function NewsFeed({
           <h2 id="intel-feed-title" className="pixel-title mt-1 text-xl">News intelligence</h2>
         </div>
         <p className="text-xs text-muted-foreground">
-          {sourceCount ? `${healthyCount}/${sourceCount} sources online` : "Connecting to sources..."}
+          {sourceCount
+            ? `${items.length} fresh stories · ${healthyCount}/${sourceCount} sources online`
+            : "Connecting to sources..."}
         </p>
       </div>
 
@@ -131,6 +138,9 @@ export function NewsFeed({
               }`}
             >
               {option}
+              <span className="ml-1 tabular opacity-60">
+                {option === "all" ? items.length : (categoryCounts[option] ?? 0)}
+              </span>
             </button>
           ))}
         </div>
@@ -177,6 +187,11 @@ export function NewsFeed({
                     <span className="ml-auto font-mono text-primary">ATTN {item.attentionScore}</span>
                   </div>
                   <p className="mt-1 font-semibold leading-snug group-hover:text-primary">{item.headline}</p>
+                  {item.summary && (
+                    <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                      {item.summary.slice(0, 240)}
+                    </p>
+                  )}
                   <p className="mt-1 text-xs text-muted-foreground">{item.whyItMatters}</p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {item.flags.map((flag) => <span key={flag} className="border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">{flag}</span>)}
@@ -187,7 +202,22 @@ export function NewsFeed({
               </div>
             </a>
           ))}
-          {!shown.length && <p className="py-10 text-sm text-muted-foreground">No matching headlines.</p>}
+          {!shown.length && (
+            <div className="py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                No {filter === "all" ? "" : `${filter} `}stories in the last 7 days.
+              </p>
+              {filter !== "all" && items.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => onFilterChange("all")}
+                  className="mt-3 border border-primary/50 px-3 py-1.5 text-xs font-bold uppercase text-primary hover:bg-primary/10"
+                >
+                  Show all {items.length} recent stories
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
     </section>

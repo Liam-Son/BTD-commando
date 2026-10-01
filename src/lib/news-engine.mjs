@@ -4,11 +4,19 @@ const DEFAULT_GDELT_QUERY = '(stocks OR "stock market" OR earnings OR inflation 
 const FED_RSS = 'https://www.federalreserve.gov/feeds/press_all.xml';
 const FED_MONETARY_RSS = 'https://www.federalreserve.gov/feeds/press_monetary.xml';
 const SEC_RSS = 'https://www.sec.gov/news/pressreleases.rss';
+const PUBLIC_RSS_SOURCES = [
+  ['cnbc', 'https://www.cnbc.com/id/100003114/device/rss/rss.html', 'cnbc.com'],
+  ['marketwatch', 'https://feeds.marketwatch.com/marketwatch/topstories/', 'marketwatch.com'],
+  ['coindesk', 'https://www.coindesk.com/arc/outboundfeeds/rss/', 'coindesk.com'],
+  ['defense_news', 'https://www.defensenews.com/arc/outboundfeeds/rss/', 'defensenews.com'],
+  ['oilprice', 'https://oilprice.com/rss/main', 'oilprice.com'],
+];
 
 const SOURCE_QUALITY = {
   'federalreserve.gov':100, 'sec.gov':100,
   'reuters.com':95, 'apnews.com':93, 'bloomberg.com':92, 'ft.com':91, 'wsj.com':90,
   'cnbc.com':86, 'marketwatch.com':84, 'coindesk.com':82, 'finance.yahoo.com':80,
+  'defensenews.com':82, 'oilprice.com':80,
   'finnhub':78
 };
 
@@ -19,12 +27,12 @@ const CRITICAL_TERMS = [
 ];
 
 const CATEGORY_RULES = [
-  ['crypto', ['bitcoin',' btc ','ethereum',' eth ','crypto','stablecoin','tokenized']],
-  ['commodities', ['oil','crude','brent','wti','gold','silver','copper','wheat','corn','natural gas']],
-  ['macro', ['federal reserve','fomc','inflation','cpi','ppi','gdp','payroll','unemployment','interest rate','yield','central bank']],
+  ['crypto', ['bitcoin',' btc ','ethereum',' eth ','crypto','stablecoin','tokenized','dogecoin','doge']],
+  ['commodities', ['oil','crude','brent','wti','diesel','gasoline','fuel','gold','silver','copper','wheat','corn','natural gas','lng','energy','power plants']],
+  ['macro', ['federal reserve','fomc','inflation','cpi','ppi','gdp','payroll','unemployment','interest rate','yield','central bank','tariff','sanction','trade war','export ban','export control']],
   ['regulation', [' sec ','securities and exchange commission','cftc','regulation','rulemaking','enforcement','antitrust']],
-  ['defense', ['defense','military','missile','pentagon','nato','weapon','drone','airstrike','navy','army']],
-  ['stocks', ['shares','stock','earnings','guidance','revenue','profit','ipo','merger','acquisition','buyback']],
+  ['defense', ['defense','military','missile','pentagon','nato','weapon','drone','airstrike','navy','army','air force','space force','space command','procurement']],
+  ['stocks', ['shares','stock','earnings','guidance','revenue','profit','ipo','merger','acquisition','buyback','artificial intelligence','ai chip','ai model']],
   ['markets', ['market','s&p','nasdaq','dow','equities','futures','volatility','vix','treasury yields']],
 ];
 
@@ -39,6 +47,7 @@ const cache = new Map();
 const breakers = new Map();
 const CACHE_TTL_MS = 60_000;
 const STALE_TTL_MS = 10 * 60_000;
+const MAX_NEWS_AGE_MINUTES = 7 * 24 * 60;
 
 export function clean(s = '') {
   return String(s).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -49,6 +58,7 @@ function decodeEntities(s='') {
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
     .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
     .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)));
 }
 
@@ -128,6 +138,14 @@ function sharesDistinctiveToken(a,b) {
   return false;
 }
 
+function sharesEventTerms(a,b) {
+  const A=distinctiveTokens(a), B=distinctiveTokens(b);
+  if (!A.size || !B.size) return false;
+  let shared=0;
+  for (const term of A) if (B.has(term)) shared++;
+  return shared >= 3 && shared / Math.min(A.size,B.size) >= 0.5;
+}
+
 export function canonicalUrl(raw) {
   try {
     const u = new URL(raw);
@@ -155,6 +173,14 @@ export function classify(text) {
   }
   if (!out.size) out.add('other');
   return [...out];
+}
+
+export function isRecent(publishedAt, now = Date.now()) {
+  return ageMinutes(publishedAt, now) <= MAX_NEWS_AGE_MINUTES;
+}
+
+export function isRelevantIntel(categories, tickers = [], itemSeverity = 'normal') {
+  return !categories.includes('other') || tickers.length > 0 || itemSeverity !== 'normal';
 }
 
 function ageMinutes(iso, now = Date.now()) {
@@ -328,7 +354,9 @@ export function cluster(rawItems) {
       for (const idx of candidates) {
         const g=groups[idx];
         const dt=Math.abs(new Date(g[0].publishedAt)-new Date(item.publishedAt));
-        if (dt<=36*3600_000 && jaccard(g[0].headline,item.headline)>=0.72 && sharesDistinctiveToken(g[0].headline,item.headline)) { hitIndex=idx; break; }
+        const titleSimilarity=jaccard(g[0].headline,item.headline);
+        const sameEvent=titleSimilarity>=0.72 || sharesEventTerms(g[0].headline,item.headline);
+        if (dt<=36*3600_000 && sameEvent && sharesDistinctiveToken(g[0].headline,item.headline)) { hitIndex=idx; break; }
       }
     }
     if (hitIndex == null) {
@@ -362,6 +390,7 @@ export async function getNews(options = {}) {
     ['gdelt', () => fetchGdelt(buildGdeltQuery(query, trackedAssets))], ['finnhub', () => fetchFinnhub()],
     ['fed', () => fetchRss(FED_RSS,'federalreserve.gov')], ['fed_monetary', () => fetchRss(FED_MONETARY_RSS,'federalreserve.gov')],
     ['sec', () => fetchRss(SEC_RSS,'sec.gov')],
+    ...PUBLIC_RSS_SOURCES.map(([name, url, publisher]) => [name, () => fetchRss(url, publisher)]),
     ...customFeeds.map((url,i)=>[`extra_${i+1}`,()=>fetchRss(url,domainOf(url)||`extra_${i+1}`)]),
   ];
 
@@ -404,7 +433,7 @@ export async function getNews(options = {}) {
       attentionScore:attention(best,categories,tickers,publisherCount,now), sourceQuality:sourceQuality(best.publisher,best.provider),
       corroborationCount:publisherCount, relatedSources:[...new Set(group.map(x=>x.publisher).filter(Boolean))].slice(0,8), ageMinutes:age, flags, whyItMatters:whyItMatters(categories,tickers,publisherCount,age),
     };
-  });
+  }).filter(item => isRecent(item.publishedAt, now) && isRelevantIntel(item.categories, item.tickers, item.severity));
   items.sort((a,b)=> b.attentionScore-a.attentionScore || new Date(b.publishedAt)-new Date(a.publishedAt));
   const value={generatedAt:new Date(now).toISOString(),items:items.slice(0,limit),sourceHealth,cacheStatus:'MISS'};
   cache.set(cacheKey,{at:now,value});
