@@ -63,63 +63,53 @@ const INTEL_GROUPS = [
 
 export function IntelSection() {
   return (
-    <section id="intel" className="mil-panel p-5">
-      <div className="flex flex-wrap items-end justify-between gap-2 border-b border-border pb-3">
+    <section id="intel" className="mil-panel p-3 sm:p-4" aria-labelledby="intel-title">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-3">
         <div>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Field intel
+            01 / Field intel session
           </p>
-          <h2 className="mt-1 text-xl font-bold leading-tight">
+          <h2 id="intel-title" className="pixel-title mt-1 text-xl">
             Intel — context behind the dip
           </h2>
         </div>
-        <p className="max-w-md text-[11px] leading-relaxed text-muted-foreground">
-          Macro context the Sniper board reads alongside price: weather, defense demand,
-          geography, resources and critical alerts.
+        <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
+          Visual reference library for the macro signals the Sniper board reads alongside price.
         </p>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="space-y-4">
         {INTEL_GROUPS.map((group) => (
-          <article
+          <section
             key={group.title}
-            className="rounded-sm border border-border bg-surface-2 p-3 transition-colors hover:border-primary/50"
+            className="grid gap-2 border-b border-border pb-4 last:border-0 last:pb-0 md:grid-cols-[minmax(170px,0.8fr)_minmax(0,2.8fr)] md:items-center"
+            aria-label={group.title}
           >
-            <div className="flex items-center gap-3">
-              <img
-                src={`/theme/intel/${group.panel}`}
-                alt=""
-                width={48}
-                height={48}
-                draggable={false}
-                className="pixel h-11 w-11 shrink-0"
-              />
-              <div className="min-w-0">
-                <h3 className="text-sm font-semibold leading-tight">{group.title}</h3>
-                <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
-                  {group.summary}
-                </p>
-              </div>
-            </div>
-            <ul className="mt-3 flex flex-wrap gap-1.5">
+            <h3 className="pixel-title text-lg text-primary md:hidden">{group.title}</h3>
+            <img
+              src={`/theme/intel/${group.panel}`}
+              alt={`${group.title}. ${group.summary}`}
+              className="pixel hidden h-auto w-full md:block"
+              width={340}
+              height={250}
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
               {group.items.map(([label, file]) => (
-                <li
+                <img
                   key={file}
-                  className="flex items-center gap-1.5 rounded-sm border border-border bg-surface px-1.5 py-1 text-[10px] text-muted-foreground"
-                >
-                  <img
-                    src={`/theme/intel/${file}`}
-                    alt=""
-                    width={20}
-                    height={20}
-                    draggable={false}
-                    className="pixel h-4 w-4"
-                  />
-                  {label}
-                </li>
+                  src={`/theme/intel/${file}`}
+                  alt={`${group.title}: ${label}`}
+                  className="pixel h-auto w-full"
+                  width={200}
+                  height={235}
+                  loading="lazy"
+                  decoding="async"
+                />
               ))}
-            </ul>
-          </article>
+            </div>
+          </section>
         ))}
       </div>
     </section>

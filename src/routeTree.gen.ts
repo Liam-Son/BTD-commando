@@ -15,6 +15,7 @@ import { Route as ArmoryRouteImport } from './routes/armory'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CommunicationRouteImport } from './routes/communication'
 import { Route as CryptoRouteImport } from './routes/crypto'
+import { Route as IntelRouteImport } from './routes/intel'
 import { Route as IndexDothtmlRouteImport } from './routes/index[.]html'
 import { Route as OpsRouteImport } from './routes/ops'
 import { Route as SergeantRouteImport } from './routes/sergeant'
@@ -49,6 +50,11 @@ const CommunicationRoute = CommunicationRouteImport.update({
 const CryptoRoute = CryptoRouteImport.update({
   id: '/crypto',
   path: '/crypto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntelRoute = IntelRouteImport.update({
+  id: '/intel',
+  path: '/intel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexDothtmlRoute = IndexDothtmlRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
+  '/intel': typeof IntelRoute
   '/index.html': typeof IndexDothtmlRoute
   '/ops': typeof OpsRoute
   '/sergeant': typeof SergeantRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
+  '/intel': typeof IntelRoute
   '/index.html': typeof IndexDothtmlRoute
   '/ops': typeof OpsRoute
   '/sergeant': typeof SergeantRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
+  '/intel': typeof IntelRoute
   '/index.html': typeof IndexDothtmlRoute
   '/ops': typeof OpsRoute
   '/sergeant': typeof SergeantRoute
@@ -224,6 +233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CryptoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/intel': {
+      id: '/intel'
+      path: '/intel'
+      fullPath: '/intel'
+      preLoaderRoute: typeof IntelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/index.html': {
       id: '/index.html'
       path: '/index.html'
@@ -287,6 +303,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CommunicationRoute: CommunicationRoute,
   CryptoRoute: CryptoRoute,
+  IntelRoute: IntelRoute,
   IndexDothtmlRoute: IndexDothtmlRoute,
   OpsRoute: OpsRoute,
   SergeantRoute: SergeantRoute,

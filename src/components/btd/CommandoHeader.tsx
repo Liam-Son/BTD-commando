@@ -45,6 +45,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
           {tab("sniper", "/", "Sniper", ICONS.target)}
           {tab("sergeant", "/sergeant", "Sergeant", ICONS.sergeant)}
           {tab("communication", "/communication", "Communication", ICONS.signal)}
+          {tab("intel", "/intel", "Intel", ICONS.radar)}
           {tab("armory", "/armory", "Armory", ICONS.supply)}
           {tab("ops", "/ops", "Ops Log", ICONS.opsLog)}
           <span className="mx-0.5 hidden h-4 w-px bg-border sm:inline" />
