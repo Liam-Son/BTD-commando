@@ -11,6 +11,7 @@ import { BacktestChart } from "@/components/btd/BacktestChart";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { SniperHero } from "@/components/btd/SniperHero";
 import { MarketRadar } from "@/components/btd/MarketRadar";
+import { IntelSection } from "@/components/btd/IntelSection";
 
 export const Route = createFileRoute("/")({
   head: () => ({
