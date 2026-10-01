@@ -19,6 +19,22 @@ type SourceHealth = { ok: boolean; count: number; latencyMs: number; error?: str
 type SortMode = "top" | "latest";
 
 const FILTERS = ["all", "markets", "macro", "stocks", "crypto", "commodities", "defense", "regulation"];
+const DEFAULT_INTEL_ART = { file: "alerts/04_breaking_news.png", label: "Critical Alerts" };
+const INTEL_ART: Record<string, { file: string; label: string }> = {
+  markets: { file: "geo/01_global_hotspot.png", label: "Geo Map" },
+  macro: { file: "weather/01_storm.png", label: "Weather Intel" },
+  stocks: { file: "resources/03_copper.png", label: "Base & Resources" },
+  crypto: { file: "geo/02_route.png", label: "Geo Map" },
+  commodities: { file: "resources/01_oil.png", label: "Base & Resources" },
+  defense: { file: "defense/04_military_vehicle.png", label: "Defense Demand" },
+  regulation: { file: "alerts/02_warning.png", label: "Critical Alerts" },
+  other: DEFAULT_INTEL_ART,
+};
+
+function intelArtFor(item: NewsItem): { file: string; label: string } {
+  const category = item.categories.find((value) => INTEL_ART[value]);
+  return INTEL_ART[category ?? "other"] ?? DEFAULT_INTEL_ART;
+}
 
 function ageLabel(publishedAt: string) {
   const minutes = Math.max(0, Math.floor((Date.now() - new Date(publishedAt).getTime()) / 60000));
@@ -136,18 +152,31 @@ export function NewsFeed({ assets }: { assets: string[] }) {
         <div className="mt-3 divide-y divide-border">
           {shown.map((item) => (
             <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="group block py-4 first:pt-2 hover:bg-surface-2">
-              <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-                <span>{item.publisher}</span>
-                <span aria-hidden="true">/</span>
-                <span>{ageLabel(item.publishedAt)}</span>
-                <span className="ml-auto font-mono text-primary">ATTN {item.attentionScore}</span>
-              </div>
-              <p className="mt-1 font-semibold leading-snug group-hover:text-primary">{item.headline}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{item.whyItMatters}</p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {item.flags.map((flag) => <span key={flag} className="border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">{flag}</span>)}
-                {item.tickers.map((ticker) => <span key={ticker} className="border border-primary/40 px-1.5 py-0.5 text-[10px] text-primary">${ticker}</span>)}
-                {item.relatedSources.length > 1 && <span className="border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">{item.relatedSources.length} sources</span>}
+              <div className="flex gap-3">
+                <img
+                  src={`/theme/intel/${intelArtFor(item).file}`}
+                  alt={intelArtFor(item).label}
+                  width={1122}
+                  height={1402}
+                  loading="lazy"
+                  decoding="async"
+                  className="pixel h-20 w-16 shrink-0 object-contain sm:h-24 sm:w-20"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <span>{item.publisher}</span>
+                    <span aria-hidden="true">/</span>
+                    <span>{ageLabel(item.publishedAt)}</span>
+                    <span className="ml-auto font-mono text-primary">ATTN {item.attentionScore}</span>
+                  </div>
+                  <p className="mt-1 font-semibold leading-snug group-hover:text-primary">{item.headline}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{item.whyItMatters}</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {item.flags.map((flag) => <span key={flag} className="border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">{flag}</span>)}
+                    {item.tickers.map((ticker) => <span key={ticker} className="border border-primary/40 px-1.5 py-0.5 text-[10px] text-primary">${ticker}</span>)}
+                    {item.relatedSources.length > 1 && <span className="border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">{item.relatedSources.length} sources</span>}
+                  </div>
+                </div>
               </div>
             </a>
           ))}
