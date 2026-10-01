@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CommunicationRouteImport } from './routes/communication'
 import { Route as CryptoRouteImport } from './routes/crypto'
 import { Route as IntelRouteImport } from './routes/intel'
+import { Route as ApiNewsRouteImport } from './routes/api/news'
 import { Route as IndexDothtmlRouteImport } from './routes/index[.]html'
 import { Route as OpsRouteImport } from './routes/ops'
 import { Route as SergeantRouteImport } from './routes/sergeant'
@@ -57,6 +58,11 @@ const IntelRoute = IntelRouteImport.update({
   path: '/intel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiNewsRoute = ApiNewsRouteImport.update({
+  id: '/api/news',
+  path: '/api/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexDothtmlRoute = IndexDothtmlRouteImport.update({
   id: '/index.html',
   path: '/index.html',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
   '/intel': typeof IntelRoute
+  '/api/news': typeof ApiNewsRoute
   '/index.html': typeof IndexDothtmlRoute
   '/ops': typeof OpsRoute
   '/sergeant': typeof SergeantRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
   '/intel': typeof IntelRoute
+  '/api/news': typeof ApiNewsRoute
   '/index.html': typeof IndexDothtmlRoute
   '/ops': typeof OpsRoute
   '/sergeant': typeof SergeantRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
   '/intel': typeof IntelRoute
+  '/api/news': typeof ApiNewsRoute
   '/index.html': typeof IndexDothtmlRoute
   '/ops': typeof OpsRoute
   '/sergeant': typeof SergeantRoute
@@ -240,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/news': {
+      id: '/api/news'
+      path: '/api/news'
+      fullPath: '/api/news'
+      preLoaderRoute: typeof ApiNewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/index.html': {
       id: '/index.html'
       path: '/index.html'
@@ -304,6 +320,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommunicationRoute: CommunicationRoute,
   CryptoRoute: CryptoRoute,
   IntelRoute: IntelRoute,
+  ApiNewsRoute: ApiNewsRoute,
   IndexDothtmlRoute: IndexDothtmlRoute,
   OpsRoute: OpsRoute,
   SergeantRoute: SergeantRoute,

@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { IntelSection } from "@/components/btd/IntelSection";
+import { NewsFeed } from "@/components/btd/NewsFeed";
+import { useLiveRankings } from "@/hooks/useLiveRankings";
 
 export const Route = createFileRoute("/intel")({
   head: () => ({
@@ -16,9 +18,14 @@ export const Route = createFileRoute("/intel")({
 });
 
 function IntelPage() {
+  const { data, isLive } = useLiveRankings();
+
   return (
     <main className="min-h-screen bg-background">
-      <CommandoHeader active="intel" status={<span>Field library ready</span>} />
+      <CommandoHeader
+        active="intel"
+        status={<span>{isLive ? "Intel feed live" : "Intel snapshot"}</span>}
+      />
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
         <section className="border-b border-border pb-4">
           <p className="pixel-title text-sm text-primary">Operations desk / field library</p>
@@ -28,6 +35,7 @@ function IntelPage() {
           </p>
         </section>
         <IntelSection />
+        <NewsFeed assets={data?.assets.map((asset) => asset.symbol) ?? []} />
       </div>
     </main>
   );
