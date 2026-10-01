@@ -255,6 +255,8 @@ function Terminal() {
           </div>
         </section>
 
+        <IntelSection />
+
         {data && <FearPanel fear={data.fear} assetCount={data.assets.length} />}
 
         <LivePulseChart pulse={pulse} isLive={isLive} assetCount={data?.assets.length ?? 0} />
