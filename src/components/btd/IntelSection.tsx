@@ -23,42 +23,6 @@ const INTEL_GROUPS = [
       ["Defense budget", "defense/05_defense_budget.png"],
     ],
   },
-  {
-    title: "Geo Map",
-    summary: "Analyze regions. Track movements. Spot opportunities.",
-    panel: "geo/geo_category_box.png",
-    items: [
-      ["Global hotspot", "geo/01_global_hotspot.png"],
-      ["Route", "geo/02_route.png"],
-      ["Mountain", "geo/03_mountain.png"],
-      ["Forest", "geo/04_forest.png"],
-      ["Water", "geo/05_water.png"],
-    ],
-  },
-  {
-    title: "Base & Resources",
-    summary: "Monitor supply chains. Track key resources. Understand markets.",
-    panel: "resources/resources_category_box.png",
-    items: [
-      ["Oil", "resources/01_oil.png"],
-      ["Wheat", "resources/02_wheat.png"],
-      ["Copper", "resources/03_copper.png"],
-      ["Natural gas", "resources/04_natural_gas.png"],
-      ["Power and energy", "resources/05_power_energy.png"],
-    ],
-  },
-  {
-    title: "Critical Alerts",
-    summary: "Surface key events. Spot emerging risks. Stay ahead.",
-    panel: "alerts/alerts_category_box.png",
-    items: [
-      ["Siren", "alerts/01_siren.png"],
-      ["Warning", "alerts/02_warning.png"],
-      ["Radio alert", "alerts/03_radio_alert.png"],
-      ["Breaking news", "alerts/04_breaking_news.png"],
-      ["Global alert", "alerts/05_global_alert.png"],
-    ],
-  },
 ] as const;
 
 export function IntelSection() {

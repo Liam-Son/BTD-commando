@@ -31,7 +31,7 @@ function IntelPage() {
           <p className="pixel-title text-sm text-primary">Operations desk / field library</p>
           <h1 className="pixel-title mt-1 text-3xl leading-none sm:text-4xl">Intel</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Visual context for weather, defense demand, geography, resources and critical alerts.
+            Visual context for weather conditions and defense demand.
           </p>
         </section>
         <IntelSection />

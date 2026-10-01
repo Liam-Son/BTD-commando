@@ -19,16 +19,16 @@ type SourceHealth = { ok: boolean; count: number; latencyMs: number; error?: str
 type SortMode = "top" | "latest";
 
 const FILTERS = ["all", "markets", "macro", "stocks", "crypto", "commodities", "defense", "regulation"];
-const DEFAULT_INTEL_ART = { file: "alerts/04_breaking_news.png", label: "Critical Alerts" };
+const DEFAULT_INTEL_ART = { file: "weather/05_rain.png", label: "Weather Intel" };
 const INTEL_ART: Record<string, { file: string; label: string }> = {
-  markets: { file: "geo/01_global_hotspot.png", label: "Geo Map" },
+  markets: { file: "defense/05_defense_budget.png", label: "Defense Demand" },
   macro: { file: "weather/01_storm.png", label: "Weather Intel" },
-  stocks: { file: "resources/03_copper.png", label: "Base & Resources" },
-  crypto: { file: "geo/02_route.png", label: "Geo Map" },
-  commodities: { file: "resources/01_oil.png", label: "Base & Resources" },
+  stocks: { file: "defense/01_contract.png", label: "Defense Demand" },
+  crypto: { file: "defense/03_drone.png", label: "Defense Demand" },
+  commodities: { file: "weather/04_drought.png", label: "Weather Intel" },
   defense: { file: "defense/04_military_vehicle.png", label: "Defense Demand" },
-  regulation: { file: "alerts/02_warning.png", label: "Critical Alerts" },
-  other: DEFAULT_INTEL_ART,
+  regulation: { file: "defense/01_contract.png", label: "Defense Demand" },
+  other: { file: "weather/05_rain.png", label: "Weather Intel" },
 };
 
 function intelArtFor(item: NewsItem): { file: string; label: string } {
