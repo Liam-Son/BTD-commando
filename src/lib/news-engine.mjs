@@ -145,7 +145,14 @@ function domainOf(raw) {
 export function classify(text) {
   const t = ` ${String(text).toLowerCase()} `;
   const out = new Set();
-  for (const [cat, words] of CATEGORY_RULES) if (words.some(k => t.includes(k))) out.add(cat);
+  for (const [cat, words] of CATEGORY_RULES) {
+    if (words.some((term) => {
+      const value = term.trim();
+      const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const plural = /[a-z0-9]$/i.test(value) ? 's?' : '';
+      return new RegExp(`(^|[^a-z0-9])${escaped}${plural}(?=$|[^a-z0-9])`, 'i').test(t);
+    })) out.add(cat);
+  }
   if (!out.size) out.add('other');
   return [...out];
 }
