@@ -29,7 +29,8 @@ export const Route = createFileRoute("/api/news")({
           const category = (params.get("category") ?? "all").toLowerCase();
           const limit = Math.max(1, Math.min(Number(params.get("limit") ?? 60) || 60, 100));
           const severity = params.get("severity");
-          const result = await getNews({ trackedAssets: assets, limit });
+          const needsFiltering = (VALID_CATEGORIES.has(category) && category !== "all") || Boolean(severity);
+          const result = await getNews({ trackedAssets: assets, limit: needsFiltering ? 100 : limit });
           let items = result.items;
 
           if (VALID_CATEGORIES.has(category) && category !== "all") {
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/api/news")({
           if (severity) {
             items = items.filter((item: { severity: string }) => item.severity === severity);
           }
+          items = items.slice(0, limit);
 
           return Response.json(
             { ...result, items },
