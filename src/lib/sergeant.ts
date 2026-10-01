@@ -115,7 +115,21 @@ export interface SaveBookResult {
 type StorageReader = Pick<Storage, "getItem">;
 type StorageWriter = Pick<Storage, "setItem">;
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+/** Loose shape for untrusted JSON: named keys stay dot-accessible under noPropertyAccessFromIndexSignature. */
+type LooseRecord = {
+  symbol?: unknown; units?: unknown; avgPrice?: unknown; lastPrice?: unknown; name?: unknown;
+  assetClass?: unknown; targetSleeve?: unknown; openedAt?: unknown; updatedAt?: unknown;
+  action?: unknown; score?: unknown; suggestedSleeve?: unknown; appliedSleeve?: unknown;
+  id?: unknown; t?: unknown; flag?: unknown; price?: unknown; unitsDelta?: unknown;
+  realizedPnlDelta?: unknown; equityAfter?: unknown; reason?: unknown; details?: unknown;
+  formulaId?: unknown; policyId?: unknown; feedState?: unknown; maxDrawdownPct?: unknown;
+  maxNames?: unknown; maxSleevePct?: unknown; globalHalt?: unknown; positions?: unknown;
+  log?: unknown; cash?: unknown; realizedPnl?: unknown; peakEquity?: unknown; kills?: unknown;
+  schemaVersion?: unknown;
+  [key: string]: unknown;
+};
+
+function isRecord(value: unknown): value is LooseRecord {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
 
