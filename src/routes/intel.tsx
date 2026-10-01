@@ -25,7 +25,11 @@ function IntelPage() {
   function selectIntelCategory(category: string) {
     setSelectedCategory(category);
     window.requestAnimationFrame(() => {
-      document.getElementById("news-intelligence")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const feed = document.getElementById("news-intelligence");
+      if (!feed) return;
+      const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+      const top = feed.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+      window.scrollTo({ top, behavior: "smooth" });
     });
   }
 
