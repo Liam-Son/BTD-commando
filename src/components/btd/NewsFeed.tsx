@@ -43,9 +43,16 @@ function ageLabel(publishedAt: string) {
   return `${Math.floor(minutes / 1440)}d`;
 }
 
-export function NewsFeed({ assets }: { assets: string[] }) {
+export function NewsFeed({
+  assets,
+  filter,
+  onFilterChange,
+}: {
+  assets: string[];
+  filter: string;
+  onFilterChange: (category: string) => void;
+}) {
   const [items, setItems] = useState<NewsItem[]>([]);
-  const [filter, setFilter] = useState("all");
   const [sort, setSort] = useState<SortMode>("top");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -98,7 +105,7 @@ export function NewsFeed({ assets }: { assets: string[] }) {
   const healthyCount = Object.values(health).filter((source) => source.ok).length;
 
   return (
-    <section className="mil-panel p-4 sm:p-5" aria-labelledby="intel-feed-title">
+    <section id="news-intelligence" className="mil-panel scroll-mt-24 p-4 sm:p-5" aria-labelledby="intel-feed-title">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-3">
         <div>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">02 / Live intelligence</p>
@@ -116,7 +123,7 @@ export function NewsFeed({ assets }: { assets: string[] }) {
               key={option}
               type="button"
               aria-pressed={filter === option}
-              onClick={() => setFilter(option)}
+              onClick={() => onFilterChange(option)}
               className={`border px-2 py-1 text-[10px] font-bold uppercase ${
                 filter === option
                   ? "border-primary bg-primary/10 text-primary"

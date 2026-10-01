@@ -4,11 +4,11 @@ const INTEL_GROUPS = [
     summary: "Monitor conditions. Assess impacts. Anticipate risk.",
     panel: "weather/weather_category_box.png",
     items: [
-      ["Storm", "weather/01_storm.png"],
-      ["Heat", "weather/02_heat.png"],
-      ["Cold", "weather/03_cold.png"],
-      ["Drought", "weather/04_drought.png"],
-      ["Rain", "weather/05_rain.png"],
+      ["Storm", "weather/01_storm.png", "macro"],
+      ["Heat", "weather/02_heat.png", "macro"],
+      ["Cold", "weather/03_cold.png", "macro"],
+      ["Drought", "weather/04_drought.png", "commodities"],
+      ["Rain", "weather/05_rain.png", "commodities"],
     ],
   },
   {
@@ -16,16 +16,22 @@ const INTEL_GROUPS = [
     summary: "Track procurement. Monitor capabilities. Follow the money.",
     panel: "defense/defense_category_box.png",
     items: [
-      ["Contract", "defense/01_contract.png"],
-      ["Fighter jet", "defense/02_fighter_jet.png"],
-      ["Drone", "defense/03_drone.png"],
-      ["Military vehicle", "defense/04_military_vehicle.png"],
-      ["Defense budget", "defense/05_defense_budget.png"],
+      ["Contract", "defense/01_contract.png", "regulation"],
+      ["Fighter jet", "defense/02_fighter_jet.png", "defense"],
+      ["Drone", "defense/03_drone.png", "defense"],
+      ["Military vehicle", "defense/04_military_vehicle.png", "defense"],
+      ["Defense budget", "defense/05_defense_budget.png", "defense"],
     ],
   },
 ] as const;
 
-export function IntelSection() {
+export function IntelSection({
+  activeCategory,
+  onSelectCategory,
+}: {
+  activeCategory: string;
+  onSelectCategory: (category: string) => void;
+}) {
   return (
     <section id="intel" className="mil-panel p-3 sm:p-4" aria-labelledby="intel-title">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-3">
@@ -60,17 +66,29 @@ export function IntelSection() {
               decoding="async"
             />
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
-              {group.items.map(([label, file]) => (
-                <img
+              {group.items.map(([label, file, category]) => (
+                <button
                   key={file}
-                  src={`/theme/intel/${file}`}
-                  alt={`${group.title}: ${label}`}
-                  className="pixel h-auto w-full"
-                  width={200}
-                  height={250}
-                  loading="lazy"
-                  decoding="async"
-                />
+                  type="button"
+                  aria-label={`Show ${category} intelligence for ${label}`}
+                  aria-pressed={activeCategory === category}
+                  onClick={() => onSelectCategory(category)}
+                  className={`w-full overflow-hidden border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
+                    activeCategory === category
+                      ? "border-primary ring-1 ring-primary"
+                      : "border-transparent hover:border-primary/60"
+                  }`}
+                >
+                  <img
+                    src={`/theme/intel/${file}`}
+                    alt=""
+                    className="pixel block h-auto w-full"
+                    width={200}
+                    height={250}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </button>
               ))}
             </div>
           </section>

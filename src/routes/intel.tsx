@@ -3,6 +3,7 @@ import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { IntelSection } from "@/components/btd/IntelSection";
 import { NewsFeed } from "@/components/btd/NewsFeed";
 import { useLiveRankings } from "@/hooks/useLiveRankings";
+import { useState } from "react";
 
 export const Route = createFileRoute("/intel")({
   head: () => ({
@@ -19,6 +20,14 @@ export const Route = createFileRoute("/intel")({
 
 function IntelPage() {
   const { data, isLive } = useLiveRankings();
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  function selectIntelCategory(category: string) {
+    setSelectedCategory(category);
+    window.requestAnimationFrame(() => {
+      document.getElementById("news-intelligence")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -34,8 +43,12 @@ function IntelPage() {
             Visual context for weather conditions and defense demand.
           </p>
         </section>
-        <IntelSection />
-        <NewsFeed assets={data?.assets.map((asset) => asset.symbol) ?? []} />
+        <IntelSection activeCategory={selectedCategory} onSelectCategory={selectIntelCategory} />
+        <NewsFeed
+          assets={data?.assets.map((asset) => asset.symbol) ?? []}
+          filter={selectedCategory}
+          onFilterChange={setSelectedCategory}
+        />
       </div>
     </main>
   );
