@@ -11,12 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as ArmoryRouteImport } from './routes/armory'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CommunicationRouteImport } from './routes/communication'
 import { Route as CryptoRouteImport } from './routes/crypto'
 import { Route as IndexDothtmlRouteImport } from './routes/index[.]html'
+import { Route as OpsRouteImport } from './routes/ops'
+import { Route as SergeantRouteImport } from './routes/sergeant'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StocksRouteImport } from './routes/stocks'
-import { Route as SergeantRouteImport } from './routes/sergeant'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 
 const IndexRoute = IndexRouteImport.update({
@@ -28,9 +31,19 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArmoryRoute = ArmoryRouteImport.update({
+  id: '/armory',
+  path: '/armory',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunicationRoute = CommunicationRouteImport.update({
+  id: '/communication',
+  path: '/communication',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CryptoRoute = CryptoRouteImport.update({
@@ -43,6 +56,16 @@ const IndexDothtmlRoute = IndexDothtmlRouteImport.update({
   path: '/index.html',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OpsRoute = OpsRouteImport.update({
+  id: '/ops',
+  path: '/ops',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SergeantRoute = SergeantRouteImport.update({
+  id: '/sergeant',
+  path: '/sergeant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -53,11 +76,6 @@ const StocksRoute = StocksRouteImport.update({
   path: '/stocks',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SergeantRoute = SergeantRouteImport.update({
-  id: '/sergeant',
-  path: '/sergeant',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
@@ -66,79 +84,100 @@ const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/armory': typeof ArmoryRoute
   '/auth': typeof AuthRoute
+  '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
   '/index.html': typeof IndexDothtmlRoute
+  '/ops': typeof OpsRoute
+  '/sergeant': typeof SergeantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
-  '/sergeant': typeof SergeantRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/armory': typeof ArmoryRoute
   '/auth': typeof AuthRoute
+  '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
   '/index.html': typeof IndexDothtmlRoute
+  '/ops': typeof OpsRoute
+  '/sergeant': typeof SergeantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
-  '/sergeant': typeof SergeantRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/armory': typeof ArmoryRoute
   '/auth': typeof AuthRoute
+  '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
   '/index.html': typeof IndexDothtmlRoute
+  '/ops': typeof OpsRoute
+  '/sergeant': typeof SergeantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
-  '/sergeant': typeof SergeantRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/armory'
     | '/auth'
+    | '/communication'
     | '/crypto'
     | '/index.html'
+    | '/ops'
+    | '/sergeant'
     | '/sitemap.xml'
     | '/stocks'
-    | '/sergeant'
     | '/portfolio'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/armory'
     | '/auth'
+    | '/communication'
     | '/crypto'
     | '/index.html'
+    | '/ops'
+    | '/sergeant'
     | '/sitemap.xml'
     | '/stocks'
-    | '/sergeant'
     | '/portfolio'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/armory'
     | '/auth'
+    | '/communication'
     | '/crypto'
     | '/index.html'
+    | '/ops'
+    | '/sergeant'
     | '/sitemap.xml'
     | '/stocks'
-    | '/sergeant'
     | '/_authenticated/portfolio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  ArmoryRoute: typeof ArmoryRoute
   AuthRoute: typeof AuthRoute
+  CommunicationRoute: typeof CommunicationRoute
   CryptoRoute: typeof CryptoRoute
   IndexDothtmlRoute: typeof IndexDothtmlRoute
+  OpsRoute: typeof OpsRoute
+  SergeantRoute: typeof SergeantRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StocksRoute: typeof StocksRoute
-  SergeantRoute: typeof SergeantRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -157,11 +196,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/armory': {
+      id: '/armory'
+      path: '/armory'
+      fullPath: '/armory'
+      preLoaderRoute: typeof ArmoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/communication': {
+      id: '/communication'
+      path: '/communication'
+      fullPath: '/communication'
+      preLoaderRoute: typeof CommunicationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/crypto': {
@@ -178,6 +231,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexDothtmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ops': {
+      id: '/ops'
+      path: '/ops'
+      fullPath: '/ops'
+      preLoaderRoute: typeof OpsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sergeant': {
+      id: '/sergeant'
+      path: '/sergeant'
+      fullPath: '/sergeant'
+      preLoaderRoute: typeof SergeantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -190,13 +257,6 @@ declare module '@tanstack/react-router' {
       path: '/stocks'
       fullPath: '/stocks'
       preLoaderRoute: typeof StocksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sergeant': {
-      id: '/sergeant'
-      path: '/sergeant'
-      fullPath: '/sergeant'
-      preLoaderRoute: typeof SergeantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/portfolio': {
@@ -223,12 +283,15 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  ArmoryRoute: ArmoryRoute,
   AuthRoute: AuthRoute,
+  CommunicationRoute: CommunicationRoute,
   CryptoRoute: CryptoRoute,
   IndexDothtmlRoute: IndexDothtmlRoute,
+  OpsRoute: OpsRoute,
+  SergeantRoute: SergeantRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StocksRoute: StocksRoute,
-  SergeantRoute: SergeantRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

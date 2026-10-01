@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 import { ICONS, PixelIcon } from "@/components/btd/PixelIcon";
 
 type Props = {
-  active?: "sniper" | "sergeant" | "stocks" | "crypto" | "portfolio" | "armory" | "ops";
+  active?:
+    "sniper" | "sergeant" | "communication" | "stocks" | "crypto" | "portfolio" | "armory" | "ops";
   status?: ReactNode;
   signedIn?: boolean;
 };
@@ -32,7 +33,9 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <PixelIcon name={ICONS.aim} className="pixel h-8 w-8 shrink-0" />
           <div className="min-w-0">
-            <h1 className="pixel-title text-xl leading-none text-primary sm:text-2xl">BTD COMMANDO</h1>
+            <h1 className="pixel-title text-xl leading-none text-primary sm:text-2xl">
+              BTD COMMANDO
+            </h1>
             <p className="hidden text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:block">
               Find the dip. Control the risk.
             </p>
@@ -41,6 +44,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
         <nav className="flex flex-wrap items-center gap-1 border border-border bg-surface px-1 py-0.5">
           {tab("sniper", "/", "Sniper", ICONS.target)}
           {tab("sergeant", "/sergeant", "Sergeant", ICONS.sergeant)}
+          {tab("communication", "/communication", "Communication", ICONS.signal)}
           {tab("armory", "/armory", "Armory", ICONS.supply)}
           {tab("ops", "/ops", "Ops Log", ICONS.opsLog)}
           <span className="mx-0.5 hidden h-4 w-px bg-border sm:inline" />
@@ -55,11 +59,14 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
           </Link>
         </nav>
         {status ? (
-          <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">{status}</div>
+          <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+            {status}
+          </div>
         ) : null}
       </div>
       <div className="border-t border-border bg-surface px-3 py-1 text-center text-[10px] text-muted-foreground">
-        ROE · score ≠ order · paper only · not advice · <span className="tabular text-primary">btd_v1_0</span>
+        ROE · score ≠ order · paper only · not advice ·{" "}
+        <span className="tabular text-primary">btd_v1_0</span>
       </div>
     </header>
   );
