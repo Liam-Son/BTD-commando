@@ -103,7 +103,7 @@ export function IntelSection() {
                   alt={`${group.title}: ${label}`}
                   className="pixel h-auto w-full"
                   width={200}
-                  height={235}
+                  height={250}
                   loading="lazy"
                   decoding="async"
                 />
