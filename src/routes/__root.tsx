@@ -11,6 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { FieldRadio } from "../components/btd/FieldRadio";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { GOOGLE_SITE_VERIFICATION } from "../lib/seo-verification";
 import { siteJsonLd } from "../lib/structured-data";
@@ -134,6 +135,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <FieldRadio />
     </QueryClientProvider>
   );
 }
