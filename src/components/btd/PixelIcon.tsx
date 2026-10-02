@@ -1,5 +1,22 @@
-export function PixelIcon({ name, alt = "", className = "pixel h-5 w-5" }: { name: string; alt?: string; className?: string }) {
-  return <img src={`/theme/icons/${name}`} alt={alt} className={className} width={32} height={32} draggable={false} />;
+export function PixelIcon({
+  name,
+  alt = "",
+  className = "pixel h-5 w-5",
+}: {
+  name: string;
+  alt?: string;
+  className?: string;
+}) {
+  return (
+    <img
+      src={`/theme/icons/${name}`}
+      alt={alt}
+      className={className}
+      width={32}
+      height={32}
+      draggable={false}
+    />
+  );
 }
 export const ICONS = {
   idle: "01_idle.png",
@@ -22,4 +39,5 @@ export const ICONS = {
   paperBook: "48_paper_book.png",
   opsLog: "49_ops_log.png",
   sergeant: "50_sergeant_chat.png",
+  medkit: "25_medkit.png",
 } as const;

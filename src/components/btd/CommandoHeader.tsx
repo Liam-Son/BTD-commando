@@ -4,7 +4,16 @@ import { ICONS, PixelIcon } from "@/components/btd/PixelIcon";
 
 type Props = {
   active?:
-    "sniper" | "sergeant" | "communication" | "stocks" | "crypto" | "portfolio" | "armory" | "ops";
+    | "sniper"
+    | "sergeant"
+    | "communication"
+    | "intel"
+    | "medic"
+    | "stocks"
+    | "crypto"
+    | "portfolio"
+    | "armory"
+    | "ops";
   status?: ReactNode;
   signedIn?: boolean;
 };
@@ -46,6 +55,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
           {tab("sergeant", "/sergeant", "Sergeant", ICONS.sergeant)}
           {tab("communication", "/communication", "Communication", ICONS.signal)}
           {tab("intel", "/intel", "Intel", ICONS.radar)}
+          {tab("medic", "/medic", "Medic", ICONS.medkit)}
           {tab("armory", "/armory", "Armory", ICONS.supply)}
           {tab("ops", "/ops", "Ops Log", ICONS.opsLog)}
           <span className="mx-0.5 hidden h-4 w-px bg-border sm:inline" />

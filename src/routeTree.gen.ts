@@ -15,14 +15,15 @@ import { Route as ArmoryRouteImport } from './routes/armory'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CommunicationRouteImport } from './routes/communication'
 import { Route as CryptoRouteImport } from './routes/crypto'
-import { Route as IntelRouteImport } from './routes/intel'
-import { Route as ApiNewsRouteImport } from './routes/api.news'
 import { Route as IndexDothtmlRouteImport } from './routes/index[.]html'
+import { Route as IntelRouteImport } from './routes/intel'
+import { Route as MedicRouteImport } from './routes/medic'
 import { Route as OpsRouteImport } from './routes/ops'
 import { Route as SergeantRouteImport } from './routes/sergeant'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StocksRouteImport } from './routes/stocks'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
+import { Route as ApiNewsRouteImport } from './routes/api.news'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -53,19 +54,19 @@ const CryptoRoute = CryptoRouteImport.update({
   path: '/crypto',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IndexDothtmlRoute = IndexDothtmlRouteImport.update({
+  id: '/index.html',
+  path: '/index.html',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IntelRoute = IntelRouteImport.update({
   id: '/intel',
   path: '/intel',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiNewsRoute = ApiNewsRouteImport.update({
-  id: '/api/news',
-  path: '/api/news',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexDothtmlRoute = IndexDothtmlRouteImport.update({
-  id: '/index.html',
-  path: '/index.html',
+const MedicRoute = MedicRouteImport.update({
+  id: '/medic',
+  path: '/medic',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OpsRoute = OpsRouteImport.update({
@@ -93,6 +94,11 @@ const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
   path: '/portfolio',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiNewsRoute = ApiNewsRouteImport.update({
+  id: '/api/news',
+  path: '/api/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -100,14 +106,15 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
-  '/intel': typeof IntelRoute
-  '/api/news': typeof ApiNewsRoute
   '/index.html': typeof IndexDothtmlRoute
+  '/intel': typeof IntelRoute
+  '/medic': typeof MedicRoute
   '/ops': typeof OpsRoute
   '/sergeant': typeof SergeantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
+  '/api/news': typeof ApiNewsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -115,14 +122,15 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
-  '/intel': typeof IntelRoute
-  '/api/news': typeof ApiNewsRoute
   '/index.html': typeof IndexDothtmlRoute
+  '/intel': typeof IntelRoute
+  '/medic': typeof MedicRoute
   '/ops': typeof OpsRoute
   '/sergeant': typeof SergeantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
+  '/api/news': typeof ApiNewsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,14 +140,15 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
-  '/intel': typeof IntelRoute
-  '/api/news': typeof ApiNewsRoute
   '/index.html': typeof IndexDothtmlRoute
+  '/intel': typeof IntelRoute
+  '/medic': typeof MedicRoute
   '/ops': typeof OpsRoute
   '/sergeant': typeof SergeantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
+  '/api/news': typeof ApiNewsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -150,11 +159,14 @@ export interface FileRouteTypes {
     | '/communication'
     | '/crypto'
     | '/index.html'
+    | '/intel'
+    | '/medic'
     | '/ops'
     | '/sergeant'
     | '/sitemap.xml'
     | '/stocks'
     | '/portfolio'
+    | '/api/news'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -163,11 +175,14 @@ export interface FileRouteTypes {
     | '/communication'
     | '/crypto'
     | '/index.html'
+    | '/intel'
+    | '/medic'
     | '/ops'
     | '/sergeant'
     | '/sitemap.xml'
     | '/stocks'
     | '/portfolio'
+    | '/api/news'
   id:
     | '__root__'
     | '/'
@@ -177,11 +192,14 @@ export interface FileRouteTypes {
     | '/communication'
     | '/crypto'
     | '/index.html'
+    | '/intel'
+    | '/medic'
     | '/ops'
     | '/sergeant'
     | '/sitemap.xml'
     | '/stocks'
     | '/_authenticated/portfolio'
+    | '/api/news'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -192,10 +210,13 @@ export interface RootRouteChildren {
   CommunicationRoute: typeof CommunicationRoute
   CryptoRoute: typeof CryptoRoute
   IndexDothtmlRoute: typeof IndexDothtmlRoute
+  IntelRoute: typeof IntelRoute
+  MedicRoute: typeof MedicRoute
   OpsRoute: typeof OpsRoute
   SergeantRoute: typeof SergeantRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StocksRoute: typeof StocksRoute
+  ApiNewsRoute: typeof ApiNewsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -242,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CryptoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/index.html': {
+      id: '/index.html'
+      path: '/index.html'
+      fullPath: '/index.html'
+      preLoaderRoute: typeof IndexDothtmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/intel': {
       id: '/intel'
       path: '/intel'
@@ -249,18 +277,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntelRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/news': {
-      id: '/api/news'
-      path: '/api/news'
-      fullPath: '/api/news'
-      preLoaderRoute: typeof ApiNewsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/index.html': {
-      id: '/index.html'
-      path: '/index.html'
-      fullPath: '/index.html'
-      preLoaderRoute: typeof IndexDothtmlRouteImport
+    '/medic': {
+      id: '/medic'
+      path: '/medic'
+      fullPath: '/medic'
+      preLoaderRoute: typeof MedicRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ops': {
@@ -298,6 +319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortfolioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/news': {
+      id: '/api/news'
+      path: '/api/news'
+      fullPath: '/api/news'
+      preLoaderRoute: typeof ApiNewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -319,13 +347,14 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CommunicationRoute: CommunicationRoute,
   CryptoRoute: CryptoRoute,
-  IntelRoute: IntelRoute,
-  ApiNewsRoute: ApiNewsRoute,
   IndexDothtmlRoute: IndexDothtmlRoute,
+  IntelRoute: IntelRoute,
+  MedicRoute: MedicRoute,
   OpsRoute: OpsRoute,
   SergeantRoute: SergeantRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StocksRoute: StocksRoute,
+  ApiNewsRoute: ApiNewsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
