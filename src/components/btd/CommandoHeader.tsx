@@ -51,6 +51,21 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
           </div>
         </Link>
         <nav className="flex flex-wrap items-center gap-1 border border-border bg-surface px-1 py-0.5">
+          <span
+            className="flex items-center gap-1 border-r border-border px-1.5 py-0.5 text-primary"
+            title="WAYFINDER navigation companion"
+            aria-label="WAYFINDER navigation companion"
+          >
+            <img
+              src="/theme/navigation/wayfinder_buddy.png"
+              alt="WAYFINDER"
+              className="h-5 w-5 object-contain"
+              loading="eager"
+            />
+            <span className="hidden text-[9px] font-bold uppercase tracking-widest lg:inline">
+              WAYFINDER
+            </span>
+          </span>
           {tab("sniper", "/", "Sniper", ICONS.target)}
           {tab("sergeant", "/sergeant", "Sergeant", ICONS.sergeant)}
           {tab("communication", "/communication", "Communication", ICONS.signal)}
