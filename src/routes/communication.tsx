@@ -24,6 +24,11 @@ type AnalystNote = { id: number; text: string; createdAt: string };
 
 const FILTERS: AssetFilter[] = ["ALL", "Stock", "Crypto", "ETF", "Commodity", "Index"];
 const NOTES_KEY = "btd.communication.notes.v1";
+const ECHO_SIGNALS = [
+  ["ACK", "ACK RECEIVED", "ECHO: Signal logged. Keep the channel clear."],
+  ["HOLD", "HOLD SIGNAL", "ECHO: Copy. I’ll hold the channel until you’re ready."],
+  ["CHECK", "REQUEST CHECK-IN", "ECHO: Check-in requested. No private details required."],
+] as const;
 
 function CommunicationPage() {
   const { data, isPending, error, isLive } = useLiveRankings();
@@ -32,6 +37,7 @@ function CommunicationPage() {
   const [search, setSearch] = useState("");
   const [draft, setDraft] = useState("");
   const [notes, setNotes] = useState<AnalystNote[]>([]);
+  const [echoSignal, setEchoSignal] = useState("Signal channel ready.");
 
   useEffect(() => {
     try {
@@ -365,6 +371,54 @@ function CommunicationPage() {
                     Partial data: {data.degraded.join(", ")}
                   </div>
                 ) : null}
+              </div>
+            </section>
+
+            <section className="mil-panel overflow-hidden" aria-labelledby="echo-title">
+              <div className="flex items-center gap-3 border-b border-border bg-surface-2 p-3">
+                <div className="h-16 w-16 overflow-hidden border-2 border-primary bg-background">
+                  <img
+                    src="/theme/communication/echo_buddy.png"
+                    alt="ECHO communication specialist"
+                    className="h-full w-full object-contain object-center"
+                    loading="eager"
+                  />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                    ECHO // SIGNAL BUDDY
+                  </p>
+                  <h2 id="echo-title" className="pixel-title text-xl text-primary">
+                    CHANNEL CHECK
+                  </h2>
+                </div>
+              </div>
+              <div className="space-y-3 p-4">
+                <p className="text-xs text-muted-foreground">
+                  Keep communication clear without turning a signal into an order. ECHO handles
+                  acknowledgements, holds, and check-ins.
+                </p>
+                <p
+                  className="border-l-2 border-primary pl-3 text-xs text-foreground/85"
+                  role="status"
+                >
+                  {echoSignal}
+                </p>
+                <div className="grid gap-2">
+                  {ECHO_SIGNALS.map(([key, label, response]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setEchoSignal(response)}
+                      className="border border-border px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide hover:border-primary hover:text-primary"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  ECHO shares signal state only. No private health or account details are exposed.
+                </p>
               </div>
             </section>
 
