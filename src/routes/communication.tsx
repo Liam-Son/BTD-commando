@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Activity, AlertTriangle, BookmarkPlus, Radio, Search, Trash2 } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
+import { NewsFeed } from "@/components/btd/NewsFeed";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { useLiveRankings } from "@/hooks/useLiveRankings";
 import { fmtPct, ratingFor, type AssetClass } from "@/lib/btd-core";
@@ -35,6 +36,8 @@ const ECHO_SIGNALS = [
 
 function CommunicationPage() {
   const { data, isPending, error, isLive } = useLiveRankings();
+  const [newsFilter, setNewsFilter] = useState("all");
+  const [newsState, setNewsState] = useState("SYNCING");
   const [feed, setFeed] = useState<FeedTab>("signals");
   const [filter, setFilter] = useState<AssetFilter>("ALL");
   const [search, setSearch] = useState("");
@@ -357,7 +360,7 @@ function CommunicationPage() {
                                 {asset.btdScore.toFixed(1)}
                               </p>
                               <p className="text-[9px] uppercase tracking-wider text-muted-foreground">
-                                {rating.label}
+                                Research rating · {rating.label}
                               </p>
                             </div>
                             <div className="tabular min-w-16 text-right text-xs">
@@ -382,18 +385,7 @@ function CommunicationPage() {
                 </div>
               </>
             ) : (
-              <div className="m-4 border border-dashed border-border bg-background/60 p-6">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warn" aria-hidden="true" />
-                  <div>
-                    <h3 className="text-sm font-bold">External news feed not connected</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      This project does not currently have a verified headlines provider. The BTD
-                      signal feed remains available in the other tab.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <NewsFeed assets={assets.map((asset) => asset.symbol)} filter={newsFilter} onFilterChange={setNewsFilter} onStatusChange={setNewsState} />
             )}
           </section>
 
@@ -418,7 +410,7 @@ function CommunicationPage() {
                   state={isLive ? "ONLINE" : "SNAPSHOT"}
                   online={isLive}
                 />
-                <StatusRow label="External headlines" state="NOT CONNECTED" online={false} />
+                <StatusRow label="External headlines" state={feed === "news" ? newsState : "OPEN NEWS TO CHECK"} online={feed === "news" && newsState === "ONLINE"} />
                 {data?.degraded.length ? (
                   <div className="border-t border-border pt-3 text-xs text-warn">
                     Partial data: {data.degraded.join(", ")}

@@ -26,10 +26,10 @@ function ArmoryPage() {
             <PixelIcon name={ICONS.supply} className="pixel h-8 w-8" />
             <div>
               <p className="text-[10px] uppercase tracking-[0.25em] text-primary/80">Armory</p>
-              <h1 className="pixel-title text-3xl text-primary">Screen locker</h1>
+              <h1 className="pixel-title text-3xl text-primary">Reference gallery</h1>
             </div>
           </div>
-          <p className="mt-2 text-sm text-muted-foreground">Full web7 screens + pixel pack 1–50. No crops.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Reference mockups and original pixel artwork, not live dashboards or executable controls. Select a card to open its actual tool.</p>
         </section>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {TOOLS.map((t) => (
@@ -37,7 +37,7 @@ function ArmoryPage() {
               <img src={t.img} alt={t.name} className="w-full object-contain" />
               <p className="flex items-center gap-2 border-t border-border px-3 py-2 text-xs font-bold uppercase tracking-wide">
                 <PixelIcon name={t.icon} className="pixel h-4 w-4" />
-                {t.name}
+                {t.name} · reference mockup
               </p>
             </Link>
           ))}

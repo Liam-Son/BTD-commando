@@ -164,6 +164,26 @@ function Terminal() {
 
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
         <SniperHero />
+        {error && (
+          <div className="rounded border border-down/40 bg-down/10 px-4 py-3 text-sm text-down">
+            Market data feed unavailable. Retrying on the next 5-minute cycle.
+          </div>
+        )}
+
+        {isPending ? (
+          <div className="rounded border border-border bg-surface">
+            <Skeleton />
+          </div>
+        ) : data ? (
+          <section id="rankings">
+            <RankingsTable
+              assets={data.assets}
+              updatedAt={new Date(liveUpdatedAt || Date.now()).toISOString()}
+            />
+          </section>
+        ) : null}
+
+
         {data && (
           <MarketRadar assets={data.assets} updatedAt={new Date(liveUpdatedAt || Date.now()).toISOString()} />
         )}
@@ -220,7 +240,7 @@ function Terminal() {
                       {top.btdScore.toFixed(1)}
                     </p>
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                      {ratingFor(top.btdScore).label}
+                      Research rating · {ratingFor(top.btdScore).label}
                     </p>
                   </div>
                 </div>
@@ -245,7 +265,7 @@ function Terminal() {
                 <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
                   <RatingBadge score={top.btdScore} />
                   <span className="tabular">
-                    {top.drawdown.toFixed(1)}% from 52w high · {top.confidence}% confidence
+                    {top.drawdown.toFixed(1)}% from 52w high · {top.confidence}% input reliability
                   </span>
                 </div>
               </>
@@ -255,32 +275,13 @@ function Terminal() {
           </div>
         </section>
 
-        <IntelSection />
+        <details className="mil-panel"><summary className="cursor-pointer p-3 text-xs font-bold uppercase text-primary">Field reference library · weather and defense</summary><IntelSection /></details>
 
         {data && <FearPanel fear={data.fear} assetCount={data.assets.length} />}
 
         <LivePulseChart pulse={pulse} isLive={isLive} assetCount={data?.assets.length ?? 0} />
 
         <BacktestChart />
-
-        {error && (
-          <div className="rounded border border-down/40 bg-down/10 px-4 py-3 text-sm text-down">
-            Market data feed unavailable. Retrying on the next 5-minute cycle.
-          </div>
-        )}
-
-        {isPending ? (
-          <div className="rounded border border-border bg-surface">
-            <Skeleton />
-          </div>
-        ) : data ? (
-          <section id="rankings">
-            <RankingsTable
-              assets={data.assets}
-              updatedAt={new Date(liveUpdatedAt || Date.now()).toISOString()}
-            />
-          </section>
-        ) : null}
 
         {data && data.degraded.length > 0 && (
           <p className="text-[11px] text-muted-foreground">

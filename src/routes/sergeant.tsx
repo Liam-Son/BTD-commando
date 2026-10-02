@@ -264,7 +264,7 @@ function SergeantPage() {
               </p>
               <h2 className="mt-2 text-2xl font-bold tracking-tight">Paper discipline desk</h2>
               <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                Sniper supplies the score. Sergeant applies a separate, versioned paper policy to a normalized
+                Research rating uses the Sniper methodology. Paper-policy posture (ACQUIRE/WATCH/REDUCE/STAND DOWN) uses different, explicit thresholds and is not the research rating. Sniper supplies the score. Sergeant applies a separate, versioned paper policy to a normalized
                 100-unit book. No broker connection, no API keys, no live orders.
               </p>
             </div>
@@ -343,7 +343,7 @@ function SergeantPage() {
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   <div className="rounded border border-border bg-background p-3">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Policy flag</p>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Paper-policy posture</p>
                     <p className="mt-1 font-mono text-lg font-bold">{flag}</p>
                   </div>
                   <div className="rounded border border-border bg-background p-3">
