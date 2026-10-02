@@ -5,6 +5,7 @@ import { useLiveRankings } from "@/hooks/useLiveRankings";
 import { useAuth } from "@/hooks/useAuth";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { SergeantHero } from "@/components/btd/SergeantHero";
+import { SergeantAdvisor } from "@/components/btd/SergeantAdvisor";
 import {
   BTD_FORMULA_ID,
   SERGEANT_POLICY_ID,
@@ -248,6 +249,10 @@ function SergeantPage() {
 
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 pt-6">
         <SergeantHero />
+      </div>
+
+      <div className="mx-auto max-w-[1200px] px-4 pt-6">
+        <SergeantAdvisor />
       </div>
 
       <div id="paper-book" className="mx-auto max-w-[1200px] space-y-4 px-4 py-6">
