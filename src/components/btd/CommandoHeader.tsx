@@ -71,6 +71,19 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
         </nav>
         {status ? (
           <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <div
+              className="flex items-center gap-1 border border-primary/30 bg-surface px-1.5 py-0.5 text-primary"
+              title="SENTINEL system status monitor"
+              aria-label="SENTINEL system status monitor"
+            >
+              <img
+                src="/theme/system/sentinel_buddy.png"
+                alt="SENTINEL"
+                className="h-5 w-5 object-contain"
+                loading="eager"
+              />
+              <span className="hidden sm:inline">SENTINEL</span>
+            </div>
             {status}
           </div>
         ) : null}
