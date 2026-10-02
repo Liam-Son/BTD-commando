@@ -1,3 +1,4 @@
+import { useDataset } from "@/lib/data-resilience";
 import { useEffect, useState } from "react";
 import { Activity, AlertTriangle, BookmarkPlus, Radio, Search, Trash2 } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
@@ -42,55 +43,10 @@ function CommunicationPage() {
   const [filter, setFilter] = useState<AssetFilter>("ALL");
   const [search, setSearch] = useState("");
   const [draft, setDraft] = useState("");
-  const [notes, setNotes] = useState<AnalystNote[]>([]);
+  const { value: notes, setValue: setNotes, issue: notesIssue } = useDataset<AnalystNote[]>("notes", () => []);
   const [echoState, setEchoState] = useState<EchoState>("CLEAR");
   const [echoSignal, setEchoSignal] = useState("Signal channel ready.");
-  const [echoEvents, setEchoEvents] = useState<EchoEvent[]>([]);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(NOTES_KEY);
-      if (!stored) return;
-      const parsed: unknown = JSON.parse(stored);
-      if (Array.isArray(parsed)) {
-        setNotes(
-          parsed
-            .filter(
-              (note): note is AnalystNote =>
-                typeof note?.id === "number" &&
-                typeof note?.text === "string" &&
-                typeof note?.createdAt === "string",
-            )
-            .slice(0, 8),
-        );
-      }
-    } catch {
-      setNotes([]);
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(ECHO_LOG_KEY);
-      if (!stored) return;
-      const parsed: unknown = JSON.parse(stored);
-      if (Array.isArray(parsed)) {
-        setEchoEvents(
-          parsed
-            .filter(
-              (event): event is EchoEvent =>
-                typeof event?.id === "number" &&
-                typeof event?.label === "string" &&
-                typeof event?.message === "string" &&
-                typeof event?.createdAt === "string",
-            )
-            .slice(0, 4),
-        );
-      }
-    } catch {
-      setEchoEvents([]);
-    }
-  }, []);
+  const { value: echoEvents, setValue: setEchoEvents, issue: echoIssue } = useDataset<EchoEvent[]>("echo", () => []);
 
   const assets = data?.assets ?? [];
   const normalizedSearch = search.trim().toLowerCase();
@@ -124,21 +80,13 @@ function CommunicationPage() {
     );
     setNotes(next);
     setDraft("");
-    try {
-      localStorage.setItem(NOTES_KEY, JSON.stringify(next));
-    } catch {
-      // Keep the note visible for this session if browser storage is unavailable.
-    }
+
   }
 
   function removeNote(id: number) {
     const next = notes.filter((note) => note.id !== id);
     setNotes(next);
-    try {
-      localStorage.setItem(NOTES_KEY, JSON.stringify(next));
-    } catch {
-      // The in-memory list still updates if browser storage is unavailable.
-    }
+
   }
 
   function recordEcho(state: EchoState, label: string, message: string) {
@@ -147,11 +95,7 @@ function CommunicationPage() {
     setEchoState(state);
     setEchoSignal(message);
     setEchoEvents(next);
-    try {
-      localStorage.setItem(ECHO_LOG_KEY, JSON.stringify(next));
-    } catch {
-      // Keep the live channel state available if browser storage is unavailable.
-    }
+
   }
 
   function clearEchoChannel() {
@@ -159,11 +103,7 @@ function CommunicationPage() {
     setEchoState("CLEAR");
     setEchoSignal(message);
     setEchoEvents([]);
-    try {
-      localStorage.removeItem(ECHO_LOG_KEY);
-    } catch {
-      // The channel still clears for this session.
-    }
+
   }
 
   return (
@@ -179,6 +119,7 @@ function CommunicationPage() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
+        {(notesIssue || echoIssue) && <p role="alert" className="text-warn">{notesIssue || echoIssue}</p>}
         <section className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-4">
           <div>
             <p className="pixel-title text-sm text-primary">Operations desk / intel channel</p>

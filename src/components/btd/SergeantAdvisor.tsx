@@ -1,3 +1,4 @@
+import { useDataset, consent } from "@/lib/data-resilience";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 type Rank = "CORPORAL" | "SERGEANT";
@@ -12,7 +13,12 @@ export function SergeantAdvisor() {
     sergeantState: "CHECKING",
     mode: "BASIC",
   });
-  const [history, setHistory] = useState<Line[]>([]);
+  const storedChat = useDataset<Line[]>("chat", () => []);
+  const [sessionHistory, setSessionHistory] = useState<Line[]>([]);
+  const localChatEnabled = typeof window !== "undefined" && consent(storedChat.owner)?.localChat === true;
+  const history = localChatEnabled ? storedChat.value : sessionHistory;
+  const setHistory = localChatEnabled ? storedChat.setValue : setSessionHistory;
+  useEffect(() => { setSessionHistory([]); }, [storedChat.owner]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -128,7 +134,7 @@ export function SergeantAdvisor() {
         </span>
       </div>
       <div className="px-4 pt-4 text-xs leading-relaxed text-muted-foreground">
-        Corporal explains basics; Sergeant handles deeper paper-only analysis when the private
+        Chat is session-only unless local saving is enabled in Data tools. {storedChat.issue} Corporal explains basics; Sergeant handles deeper paper-only analysis when the private
         engine is online. Responses do not place orders or constitute personalized investment
         advice. No live market or news connector is enabled here.
       </div>

@@ -1,3 +1,4 @@
+import { useDataset } from "@/lib/data-resilience";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { ratingFor } from "@/lib/btd-core";
@@ -75,8 +76,7 @@ function num(value: string, fallback: number) {
 function SergeantPage() {
   const { data, isPending, error, isLive, isRefreshingLive, liveUpdatedAt } = useLiveRankings();
   const { user } = useAuth();
-  const [book, setBook] = useState(() => defaultBook());
-  const [hydrated, setHydrated] = useState(false);
+  const { value: book, setValue: setBook, ready: hydrated, issue: dataIssue } = useDataset("sergeant", defaultBook);
   const [pick, setPick] = useState("");
   const [overridePct, setOverridePct] = useState(0);
   const [reason, setReason] = useState("");
@@ -92,25 +92,7 @@ function SergeantPage() {
     [assets],
   );
 
-  useEffect(() => {
-    const loaded = loadSergeantBook(window.localStorage);
-    setBook(loaded.book);
-    setKillDraft({ ...loaded.book.kills });
-    setStorageState(loaded.status === "migrated" ? "migrated" : loaded.status === "recovered" ? "degraded" : "persistent");
-    setStorageWarning(loaded.warning ?? "");
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    const saved = saveSergeantBook(window.localStorage, book);
-    if (!saved.ok) {
-      setStorageState("degraded");
-      setStorageWarning(saved.error ?? "Sergeant persistence failed.");
-    } else {
-      setStorageState((prev) => (prev === "migrated" ? "migrated" : "persistent"));
-    }
-  }, [book, hydrated]);
+  useEffect(() => { setStorageState(dataIssue ? "degraded" : "persistent"); setStorageWarning(dataIssue); setKillDraft({ ...book.kills }); }, [dataIssue, book.kills]);
 
   useEffect(() => {
     if (!hydrated || !assets.length) return;
