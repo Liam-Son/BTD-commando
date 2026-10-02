@@ -21,9 +21,12 @@ export const Route = createFileRoute("/communication")({
 type FeedTab = "signals" | "news";
 type AssetFilter = "ALL" | AssetClass;
 type AnalystNote = { id: number; text: string; createdAt: string };
+type EchoState = "CLEAR" | "ACK" | "HOLD" | "CHECK";
+type EchoEvent = { id: number; label: string; message: string; createdAt: string };
 
 const FILTERS: AssetFilter[] = ["ALL", "Stock", "Crypto", "ETF", "Commodity", "Index"];
 const NOTES_KEY = "btd.communication.notes.v1";
+const ECHO_LOG_KEY = "btd.communication.echo-log.v1";
 const ECHO_SIGNALS = [
   ["ACK", "ACK RECEIVED", "ECHO: Signal logged. Keep the channel clear."],
   ["HOLD", "HOLD SIGNAL", "ECHO: Copy. I’ll hold the channel until you’re ready."],
@@ -37,7 +40,9 @@ function CommunicationPage() {
   const [search, setSearch] = useState("");
   const [draft, setDraft] = useState("");
   const [notes, setNotes] = useState<AnalystNote[]>([]);
+  const [echoState, setEchoState] = useState<EchoState>("CLEAR");
   const [echoSignal, setEchoSignal] = useState("Signal channel ready.");
+  const [echoEvents, setEchoEvents] = useState<EchoEvent[]>([]);
 
   useEffect(() => {
     try {
@@ -58,6 +63,29 @@ function CommunicationPage() {
       }
     } catch {
       setNotes([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(ECHO_LOG_KEY);
+      if (!stored) return;
+      const parsed: unknown = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        setEchoEvents(
+          parsed
+            .filter(
+              (event): event is EchoEvent =>
+                typeof event?.id === "number" &&
+                typeof event?.label === "string" &&
+                typeof event?.message === "string" &&
+                typeof event?.createdAt === "string",
+            )
+            .slice(0, 4),
+        );
+      }
+    } catch {
+      setEchoEvents([]);
     }
   }, []);
 
@@ -107,6 +135,31 @@ function CommunicationPage() {
       localStorage.setItem(NOTES_KEY, JSON.stringify(next));
     } catch {
       // The in-memory list still updates if browser storage is unavailable.
+    }
+  }
+
+  function recordEcho(state: EchoState, label: string, message: string) {
+    const event = { id: Date.now(), label, message, createdAt: new Date().toISOString() };
+    const next = [event, ...echoEvents].slice(0, 4);
+    setEchoState(state);
+    setEchoSignal(message);
+    setEchoEvents(next);
+    try {
+      localStorage.setItem(ECHO_LOG_KEY, JSON.stringify(next));
+    } catch {
+      // Keep the live channel state available if browser storage is unavailable.
+    }
+  }
+
+  function clearEchoChannel() {
+    const message = "ECHO: Channel clear. No active signal request.";
+    setEchoState("CLEAR");
+    setEchoSignal(message);
+    setEchoEvents([]);
+    try {
+      localStorage.removeItem(ECHO_LOG_KEY);
+    } catch {
+      // The channel still clears for this session.
     }
   }
 
@@ -398,6 +451,21 @@ function CommunicationPage() {
                   Keep communication clear without turning a signal into an order. ECHO handles
                   acknowledgements, holds, and check-ins.
                 </p>
+                <div className="flex items-center justify-between border border-border bg-background px-3 py-2">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Channel state
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-primary">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    {echoState === "CLEAR"
+                      ? "CLEAR"
+                      : echoState === "ACK"
+                        ? "ACK LOGGED"
+                        : echoState === "HOLD"
+                          ? "SIGNAL ON HOLD"
+                          : "CHECK-IN REQUESTED"}
+                  </span>
+                </div>
                 <p
                   className="border-l-2 border-primary pl-3 text-xs text-foreground/85"
                   role="status"
@@ -409,12 +477,56 @@ function CommunicationPage() {
                     <button
                       key={key}
                       type="button"
-                      onClick={() => setEchoSignal(response)}
-                      className="border border-border px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide hover:border-primary hover:text-primary"
+                      onClick={() => recordEcho(key, label, response)}
+                      className={`border px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide hover:border-primary hover:text-primary ${echoState === key ? "border-primary bg-primary/10 text-primary" : "border-border"}`}
                     >
                       {label}
                     </button>
                   ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={clearEchoChannel}
+                  className="w-full border border-dashed border-border px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-muted-foreground hover:border-primary hover:text-primary"
+                >
+                  CLEAR CHANNEL
+                </button>
+                <div className="border-t border-border pt-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                      Recent channel log
+                    </span>
+                    <span className="tabular text-[10px] text-muted-foreground">
+                      {echoEvents.length}/4
+                    </span>
+                  </div>
+                  {echoEvents.length ? (
+                    <div className="space-y-2">
+                      {echoEvents.map((event) => (
+                        <div key={event.id} className="border-l border-border pl-2">
+                          <div className="flex items-center justify-between gap-2 text-[10px]">
+                            <span className="font-bold text-primary">{event.label}</span>
+                            <time
+                              className="tabular text-muted-foreground"
+                              dateTime={event.createdAt}
+                            >
+                              {new Date(event.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </time>
+                          </div>
+                          <p className="mt-0.5 text-[10px] text-muted-foreground">
+                            {event.message}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-muted-foreground">
+                      No signal events on this device.
+                    </p>
+                  )}
                 </div>
                 <p className="text-[10px] text-muted-foreground">
                   ECHO shares signal state only. No private health or account details are exposed.
