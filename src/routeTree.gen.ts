@@ -24,6 +24,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StocksRouteImport } from './routes/stocks'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as ApiNewsRouteImport } from './routes/api.news'
+import { Route as ApiSergeantChatRouteImport } from './routes/api.sergeant-chat'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -99,6 +100,11 @@ const ApiNewsRoute = ApiNewsRouteImport.update({
   path: '/api/news',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSergeantChatRoute = ApiSergeantChatRouteImport.update({
+  id: '/api/sergeant-chat',
+  path: '/api/sergeant-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/stocks': typeof StocksRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/api/news': typeof ApiNewsRoute
+  '/api/sergeant-chat': typeof ApiSergeantChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/stocks': typeof StocksRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/api/news': typeof ApiNewsRoute
+  '/api/sergeant-chat': typeof ApiSergeantChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/stocks': typeof StocksRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/api/news': typeof ApiNewsRoute
+  '/api/sergeant-chat': typeof ApiSergeantChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
     | '/stocks'
     | '/portfolio'
     | '/api/news'
+    | '/api/sergeant-chat'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/stocks'
     | '/portfolio'
     | '/api/news'
+    | '/api/sergeant-chat'
   id:
     | '__root__'
     | '/'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/stocks'
     | '/_authenticated/portfolio'
     | '/api/news'
+    | '/api/sergeant-chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -217,6 +229,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StocksRoute: typeof StocksRoute
   ApiNewsRoute: typeof ApiNewsRoute
+  ApiSergeantChatRoute: typeof ApiSergeantChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -326,6 +339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNewsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/sergeant-chat': {
+      id: '/api/sergeant-chat'
+      path: '/api/sergeant-chat'
+      fullPath: '/api/sergeant-chat'
+      preLoaderRoute: typeof ApiSergeantChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -355,6 +375,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StocksRoute: StocksRoute,
   ApiNewsRoute: ApiNewsRoute,
+  ApiSergeantChatRoute: ApiSergeantChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
