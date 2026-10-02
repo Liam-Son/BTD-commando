@@ -1,20 +1,14 @@
+import { useDataset } from "@/lib/data-resilience";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { useAuth } from "@/hooks/useAuth";
-import { loadSergeantBook, opsLogCsv, SERGEANT_STORAGE_KEY, type OpsLogRow } from "@/lib/sergeant";
+import { defaultBook, opsLogCsv, type OpsLogRow } from "@/lib/sergeant";
 export const Route = createFileRoute("/ops")({ head: () => ({ meta: [{ title: "Ops Log | BTD Commando" }] }), component: OpsPage });
 function OpsPage() {
   const { user } = useAuth();
-  const [rows, setRows] = useState<OpsLogRow[]>([]);
-  const [warning, setWarning] = useState("");
-  const [loaded, setLoaded] = useState(false);
-  useEffect(() => {
-    const refresh = () => { try { const result = loadSergeantBook(window.localStorage); setRows(result.book.log); setWarning(result.warning ?? ""); } catch { setWarning("Browser storage is unavailable. No events can be loaded."); } setLoaded(true); };
-    const onStorage = (event: StorageEvent) => { if (event.key === SERGEANT_STORAGE_KEY || event.key === null) refresh(); };
-    refresh(); window.addEventListener("storage", onStorage); window.addEventListener("focus", refresh);
-    return () => { window.removeEventListener("storage", onStorage); window.removeEventListener("focus", refresh); };
-  }, []);
+  const { value: book, issue: warning, ready: loaded } = useDataset("sergeant", defaultBook);
+  const rows = book.log;
   function download() { const url = URL.createObjectURL(new Blob([opsLogCsv(rows)], { type: "text/csv;charset=utf-8" })); const link = document.createElement("a"); link.href = url; link.download = "BTD-ops.csv"; link.click(); URL.revokeObjectURL(url); }
   return <main className="min-h-screen bg-background"><CommandoHeader active="ops" signedIn={!!user} /><div className="mx-auto max-w-[1200px] space-y-4 px-4 py-6"><section className="mil-panel p-5"><p className="text-[10px] uppercase tracking-widest text-primary">Ops Log · paper only</p><h1 className="pixel-title mt-2 text-2xl text-primary">Mission log</h1><p className="mt-2 text-xs text-muted-foreground">Actual Sergeant paper events from this browser. Read-only; no trades, storage writes, or risk changes occur here. Different devices and browsers have separate records.</p><div className="mt-3 flex gap-3"><button type="button" disabled={!rows.length} onClick={download} className="border border-primary px-3 py-2 text-xs font-bold text-primary disabled:opacity-40">Export CSV</button><Link to="/sergeant" className="border border-border px-3 py-2 text-xs">Open paper desk</Link></div></section>{warning && <p role="alert" className="text-xs text-warn">{warning}</p>}<section className="mil-panel overflow-x-auto p-4">{!loaded ? <p>Loading local events...</p> : !rows.length ? <p className="text-sm text-muted-foreground">No paper events in this browser. Decisions recorded on Sergeant will appear here.</p> : <table className="w-full text-left text-xs"><thead className="text-primary"><tr>{["Time", "Action", "Asset", "Paper posture", "Applied sleeve", "Reason / details", "Feed"].map(t=><th key={t} className="p-2">{t}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.id} className="border-t border-border"><td className="p-2 whitespace-nowrap">{new Date(row.t).toLocaleString()}</td><td className="p-2">{row.action}</td><td className="p-2">{row.symbol ?? "—"}</td><td className="p-2">{row.flag ?? "—"}</td><td className="p-2">{row.appliedSleeve === null ? "—" : (row.appliedSleeve*100).toFixed(1)+"%"}</td><td className="p-2">{row.reason || row.details || "—"}</td><td className="p-2">{row.feedState ?? "—"}</td></tr>)}</tbody></table>}</section><details className="mil-panel"><summary className="cursor-pointer p-3 text-xs text-muted-foreground">Reference artwork · mockup only</summary><img src="/theme/mock-ops-log.png" alt="Ops reference mockup, not actual event data" className="max-h-[420px] w-full object-contain" /></details></div></main>;
 }

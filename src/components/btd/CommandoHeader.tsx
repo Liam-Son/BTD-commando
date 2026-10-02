@@ -1,3 +1,4 @@
+import { useCloudSync } from "@/lib/data-resilience";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { ICONS, PixelIcon } from "@/components/btd/PixelIcon";
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
+  useCloudSync();
   const tab = (key: Props["active"], to: string, label: string, iconFile: string) => {
     const on = active === key;
     return (
@@ -70,7 +72,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
           {tab("sergeant", "/sergeant", "Sergeant", ICONS.sergeant)}
           {tab("intel", "/intel", "Intel", ICONS.radar)}
           {tab("medic", "/medic", "Medic", ICONS.medkit)}
-          <details className="relative"><summary className="mil-tab cursor-pointer text-primary">Tools</summary><div className="absolute right-0 top-full z-50 flex min-w-44 flex-col gap-1 border-2 border-primary/40 bg-background p-2 shadow-xl">{tab("communication", "/communication", "Communication", ICONS.signal)}{tab("armory", "/armory", "Armory", ICONS.supply)}{tab("ops", "/ops", "Ops Log", ICONS.opsLog)}{tab("stocks", "/stocks", "Stocks", ICONS.score)}{tab("crypto", "/crypto", "Crypto", ICONS.signal)}</div></details>
+          <details className="relative"><summary className="mil-tab cursor-pointer text-primary">Tools</summary><div className="absolute right-0 top-full z-50 flex min-w-44 flex-col gap-1 border-2 border-primary/40 bg-background p-2 shadow-xl"><Link to="/data-tools" className="mil-tab">Data tools</Link>{tab("communication", "/communication", "Communication", ICONS.signal)}{tab("armory", "/armory", "Armory", ICONS.supply)}{tab("ops", "/ops", "Ops Log", ICONS.opsLog)}{tab("stocks", "/stocks", "Stocks", ICONS.score)}{tab("crypto", "/crypto", "Crypto", ICONS.signal)}</div></details>
           <span className="mx-0.5 hidden h-4 w-px bg-border sm:inline" />
           <Link
             to={signedIn ? "/portfolio" : "/auth"}

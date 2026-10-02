@@ -1,3 +1,4 @@
+import { useDataset } from "@/lib/data-resilience";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
@@ -81,7 +82,7 @@ const buddyOptions = [
     "good",
     "GOOD TO GO",
     "PATCH: Status received. Keep the plan measured.",
-    "Ready to share a simple green signal.",
+    "Save a simple green status locally.",
   ],
   [
     "recovery",
@@ -92,7 +93,7 @@ const buddyOptions = [
   [
     "checkin",
     "NEED A CHECK-IN",
-    "PATCH: Copy. A buddy signal is out; no private details shared.",
+    "PATCH: Saved locally. No message was sent to another person.",
     "Ask for contact without explaining everything.",
   ],
   [
@@ -162,14 +163,7 @@ function Empty({ title, text }: { title: string; text: string }) {
 
 function MedicPage() {
   const { user } = useAuth();
-  const [data, setData] = useState(() => ({
-    checkins: [] as Checkin[],
-    logs: [] as LogEntry[],
-    reminders: [] as Reminder[],
-    settings: loadMedic(null).settings,
-    buddy: loadMedic(null).buddy,
-  }));
-  const [hydrated, setHydrated] = useState(false);
+  const { value: data, setValue: setData, ready: hydrated, issue: dataIssue } = useDataset("medic", () => loadMedic(null));
   const [form, setForm] = useState(initialForm);
   const [notice, setNotice] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
@@ -182,22 +176,7 @@ function MedicPage() {
   const [breathing, setBreathing] = useState(0);
   const [buddyNote, setBuddyNote] = useState("");
 
-  useEffect(() => {
-    setData(loadMedic(window.localStorage));
-    setHydrated(true);
-  }, []);
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      window.localStorage.setItem("btd.medic.checkins.v1", JSON.stringify(data.checkins));
-      window.localStorage.setItem("btd.medic.logs.v1", JSON.stringify(data.logs));
-      window.localStorage.setItem("btd.medic.reminders.v1", JSON.stringify(data.reminders));
-      window.localStorage.setItem("btd.medic.settings.v1", JSON.stringify(data.settings));
-      window.localStorage.setItem("btd.medic.buddy.v1", JSON.stringify(data.buddy));
-    } catch {
-      setNotice("Storage unavailable; this session may not survive refresh.");
-    }
-  }, [data, hydrated]);
+  useEffect(() => { if (dataIssue) setNotice(dataIssue); }, [dataIssue]);
   useEffect(() => {
     if (!breathing) return;
     const timer = window.setInterval(
@@ -501,13 +480,13 @@ function MedicPage() {
           <div className="grid gap-4 p-4 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
               <p className="text-sm text-foreground/85">
-                Choose a simple status to keep your people informed. PATCH never asks for private
+                Choose a simple status for this device. No person-to-person messaging is connected. PATCH never asks for private
                 health details.
               </p>
               <p className="mt-3 border-l-2 border-primary pl-3 text-xs text-muted-foreground">
                 {data.buddy.updatedAt
                   ? `${data.buddy.status.toUpperCase()} · expires ${formatTime(data.buddy.expiresAt)}`
-                  : "No status shared yet · statuses expire after 24 hours."}
+                  : "No local status saved yet · statuses expire after 24 hours."}
               </p>
               {data.buddy.note && (
                 <p className="mt-2 text-xs text-muted-foreground">Note: {data.buddy.note}</p>
