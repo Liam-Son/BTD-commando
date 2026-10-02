@@ -123,6 +123,8 @@ export function FieldRadio() {
 
     resumeAttemptedRef.current = true;
     audio.volume = volume;
+    audio.src = getTrack(trackIndexRef.current).src;
+    audio.load();
     void attemptPlay(audio);
   }, [attemptPlay, hydrated, preference, volume]);
 
@@ -403,7 +405,6 @@ export function FieldRadio() {
       <audio
         ref={audioRef}
         data-testid="field-radio-audio"
-        src={activated ? track.src : undefined}
         preload="none"
         onPlaying={() => {
           if (!desiredPlayRef.current) return;
