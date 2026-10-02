@@ -20,23 +20,6 @@ type SourceHealth = { ok: boolean; count: number; latencyMs: number; error?: str
 type SortMode = "top" | "latest";
 
 const FILTERS = ["all", "markets", "macro", "stocks", "crypto", "commodities", "defense", "regulation"];
-const DEFAULT_INTEL_ART = { file: "weather/05_rain.png", label: "Weather Intel" };
-const INTEL_ART: Record<string, { file: string; label: string }> = {
-  markets: { file: "defense/05_defense_budget.png", label: "Defense Demand" },
-  macro: { file: "weather/01_storm.png", label: "Weather Intel" },
-  stocks: { file: "defense/01_contract.png", label: "Defense Demand" },
-  crypto: { file: "defense/03_drone.png", label: "Defense Demand" },
-  commodities: { file: "weather/04_drought.png", label: "Weather Intel" },
-  defense: { file: "defense/04_military_vehicle.png", label: "Defense Demand" },
-  regulation: { file: "defense/01_contract.png", label: "Defense Demand" },
-  other: { file: "weather/05_rain.png", label: "Weather Intel" },
-};
-
-function intelArtFor(item: NewsItem): { file: string; label: string } {
-  const category = item.categories.find((value) => INTEL_ART[value]);
-  return INTEL_ART[category ?? "other"] ?? DEFAULT_INTEL_ART;
-}
-
 function ageLabel(publishedAt: string) {
   const minutes = Math.max(0, Math.floor((Date.now() - new Date(publishedAt).getTime()) / 60000));
   if (minutes < 60) return `${minutes}m`;
@@ -48,10 +31,12 @@ export function NewsFeed({
   assets,
   filter,
   onFilterChange,
+  onStatusChange,
 }: {
   assets: string[];
   filter: string;
   onFilterChange: (category: string) => void;
+  onStatusChange?: (state: string) => void;
 }) {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [sort, setSort] = useState<SortMode>("top");
@@ -95,6 +80,12 @@ export function NewsFeed({
     };
   }, [query]);
 
+  useEffect(() => {
+    const total = Object.keys(health).length;
+    const online = Object.values(health).filter((source) => source.ok).length;
+    onStatusChange?.(loading ? "SYNCING" : error ? "DEGRADED" : online === 0 ? "OFFLINE" : online < total ? "DEGRADED" : "ONLINE");
+  }, [health, loading, error, onStatusChange]);
+
   const filtered = filter === "all" ? items : items.filter((item) => item.categories.includes(filter));
   const shown = [...filtered].sort((left, right) =>
     sort === "latest"
@@ -119,10 +110,11 @@ export function NewsFeed({
         <p className="text-xs text-muted-foreground">
           {sourceCount
             ? `${items.length} fresh stories · ${healthyCount}/${sourceCount} sources online`
-            : "Connecting to sources..."}
+            : loading ? "Connecting to sources..." : "No source status available"}
         </p>
       </div>
 
+      <p className="mt-3 text-xs text-muted-foreground">ATTN is a keyword-based attention heuristic (34% relevance, 26% topic impact, 20% recency, 10% corroboration, 10% source weighting), not a probability, verified truth rating, or trading signal. Categories are keyword tags and may overlap.</p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1" aria-label="Filter intelligence by category">
           {FILTERS.map((option) => (
@@ -170,17 +162,9 @@ export function NewsFeed({
           {shown.map((item) => (
             <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="group block py-4 first:pt-2 hover:bg-surface-2">
               <div className="flex gap-3">
-                <img
-                  src={`/theme/intel/${intelArtFor(item).file}`}
-                  alt={intelArtFor(item).label}
-                  width={1122}
-                  height={1402}
-                  loading="lazy"
-                  decoding="async"
-                  className="pixel h-20 w-16 shrink-0 object-contain sm:h-24 sm:w-20"
-                />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <span className="text-primary">{item.categories.join(" / ")}</span>
                     <span>{item.publisher}</span>
                     <span aria-hidden="true">/</span>
                     <span>{ageLabel(item.publishedAt)}</span>

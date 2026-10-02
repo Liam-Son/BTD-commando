@@ -54,9 +54,10 @@ export function BacktestChart() {
       <div className="flex flex-wrap items-start justify-between gap-3 px-6 pt-6">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-primary">
-            Historical performance
+            Historical proxy backtest
           </p>
-          <h2 className="mt-1 text-3xl font-bold tracking-tight">Growth of 100</h2>
+          <h2 className="mt-1 text-3xl font-bold tracking-tight">Historical proxy backtest · Growth of 100</h2>
+          <p className="mt-3 max-w-2xl border border-warn/40 bg-warn/10 p-3 text-xs text-warn">Research simulation, not the full live btd_v1_0 formula: historical PIT fundamentals are unavailable. Uses reweighted drawdown, RSI, VIX and volatility proxies. Not live or audited returns.</p>
           <p className="mt-2 max-w-lg text-[11px] leading-relaxed text-muted-foreground">
             Equal-weight entry when an asset&apos;s BTD score crosses {BUY_THRESHOLD}, exit when it
             falls below {SELL_THRESHOLD}. Weekly rebalance; uninvested capital is
@@ -66,7 +67,7 @@ export function BacktestChart() {
         </div>
         <div className="flex items-center gap-4 text-[11px]">
           <span className="flex items-center gap-1.5 text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> BTD Index™
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> BTD proxy
           </span>
           <span className="flex items-center gap-1.5 text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" /> S&amp;P 500
@@ -122,7 +123,7 @@ export function BacktestChart() {
                 <Area
                   type="monotone"
                   dataKey="btd"
-                  name="BTD Index™"
+                  name="BTD proxy"
                   stroke="var(--color-primary)"
                   fill="url(#btdFill)"
                   strokeWidth={2.5}
@@ -152,7 +153,7 @@ export function BacktestChart() {
               value={`${data.stats.benchTotal >= 0 ? "+" : ""}${data.stats.benchTotal.toFixed(1)}%`}
               tone={data.stats.benchTotal >= 0 ? "up" : "down"}
             />
-            <Stat label="BTD CAGR" value={`${data.stats.btdCagr.toFixed(1)}%`} />
+            <Stat label="Proxy CAGR" value={`${data.stats.btdCagr.toFixed(1)}%`} />
             <Stat label="S&P 500 CAGR" value={`${data.stats.benchCagr.toFixed(1)}%`} />
             <Stat
               label="Max drawdown"

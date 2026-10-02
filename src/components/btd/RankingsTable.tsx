@@ -92,7 +92,7 @@ export function RankingsTable({
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-widest">
-            Top 30 Global Buying Opportunities
+            Top 30 Global Research Targets
           </h2>
           <p className="tabular text-[11px] text-muted-foreground">
             Last updated {new Date(updatedAt).toLocaleTimeString("en-US", { hour12: false })} ·
@@ -133,8 +133,8 @@ export function RankingsTable({
                   {c.label} <span className="text-primary">{arrow(c.key)}</span>
                 </th>
               ))}
-              <th className="px-3 py-2 text-right font-medium">Conf.</th>
-              <th className="px-3 py-2 text-left font-medium">Rating</th>
+              <th className="px-3 py-2 text-right font-medium">Input reliability</th>
+              <th className="px-3 py-2 text-left font-medium">Research rating</th>
               <th
                 onClick={() => toggle("btdScore")}
                 className="cursor-pointer select-none px-3 py-2 text-right font-medium hover:text-foreground"
@@ -203,7 +203,7 @@ export function RankingsTable({
                             Total {a.btdScore.toFixed(1)} / 100
                           </span>
                           <span className="tabular text-muted-foreground">
-                            Confidence {a.confidence}%
+                            Input reliability {a.confidence}%
                           </span>
                           <span className="text-muted-foreground">
                             {a.reasons.join(" · ")}
@@ -246,7 +246,7 @@ export function RankingsTable({
         </table>
       </div>
       <p className="border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
-        Click any row to expand its quantitative factor breakdown. Scores are research signals, not
+        Input reliability is a heuristic based on factor disagreement and proxy weights, not a probability of profit. Click any row to expand its quantitative factor breakdown. Scores are research signals, not
         investment advice.
       </p>
     </section>

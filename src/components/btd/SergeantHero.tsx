@@ -4,17 +4,10 @@ import { ICONS, PixelIcon } from "@/components/btd/PixelIcon";
 export function SergeantHero() {
   return (
     <section className="mil-panel overflow-hidden bg-surface p-0">
-      <div className="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <img
-          src="/theme/mock-sergeant-overview.png"
-          alt="BTD Commando Sergeant overview"
-          className="h-full min-h-[240px] w-full object-cover object-left"
-          width={768}
-          height={329}
-        />
-        <div className="flex flex-col justify-center gap-3 border-t border-border p-5 lg:border-l lg:border-t-0 lg:p-6">
+      <div className="grid">
+        <div className="flex flex-col justify-center gap-2 p-4">
           <div className="flex items-center gap-3">
-            <div className="h-16 w-16 overflow-hidden border-2 border-primary bg-background">
+            <div className="h-10 w-10 overflow-hidden border-2 border-primary bg-background">
               <img
                 src="/theme/sergeant/sergeant_buddy.png"
                 alt="SGT COMMAND Sergeant companion"
@@ -34,7 +27,7 @@ export function SergeantHero() {
               </p>
             </div>
           </div>
-          <h2 className="pixel-title text-3xl leading-none text-primary sm:text-4xl">
+          <h2 className="pixel-title text-2xl leading-none text-primary">
             Paper command
           </h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
@@ -54,6 +47,14 @@ export function SergeantHero() {
           </Link>
         </div>
       </div>
+      <details className="border-t border-border"><summary className="cursor-pointer px-4 py-2 text-[10px] uppercase tracking-widest text-muted-foreground">View full reference artwork (mockup, not live data)</summary>        <img
+          src="/theme/mock-sergeant-overview.png"
+          alt="BTD Commando Sergeant overview"
+          className="mx-auto max-h-[360px] w-full object-contain"
+          width={768}
+          height={329}
+        />
+</details>
     </section>
   );
 }

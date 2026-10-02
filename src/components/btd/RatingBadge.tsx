@@ -38,7 +38,7 @@ export function RatingBadge({ score }: { score: number }) {
   return (
     <span className={`inline-flex items-center gap-1 whitespace-nowrap px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${MIL_CLASS[sig]}`} title={`Research signal · ${ratingFor(score).label} · not an order`}>
       <img src={`/theme/icons/${MIL_ICON[sig]}`} alt="" className="pixel h-3.5 w-3.5" width={14} height={14} />
-      {sig}
+      {ratingFor(score).label}
     </span>
   );
 }
@@ -60,7 +60,7 @@ export function ScoreCell({ score }: { score: number }) {
       <span className="tabular w-12 text-right text-sm font-bold text-foreground">{score.toFixed(1)}</span>
       <span className={`hidden items-center gap-1 px-1 text-[9px] font-bold uppercase md:inline-flex ${MIL_CLASS[sig]}`}>
         <img src={`/theme/icons/${MIL_ICON[sig]}`} alt="" className="pixel h-3 w-3" />
-        {sig}
+        {ratingFor(score).label}
       </span>
     </div>
   );
