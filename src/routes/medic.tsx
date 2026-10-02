@@ -479,11 +479,11 @@ function MedicPage() {
         <section className="mil-panel overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-2 p-4">
             <div className="flex items-center gap-3">
-              <div className="grid h-14 w-14 place-items-center border-2 border-primary bg-background">
+              <div className="h-20 w-20 overflow-hidden border-2 border-primary bg-background">
                 <img
-                  src="/theme/icons/25_medkit.png"
-                  alt="PATCH medkit"
-                  className="pixel h-10 w-10"
+                  src={`${ART}/patch_buddy.png`}
+                  alt="PATCH field medic buddy"
+                  className="pixel h-full w-full object-cover object-top"
                 />
               </div>
               <div>
