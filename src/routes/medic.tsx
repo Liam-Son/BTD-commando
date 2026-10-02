@@ -76,6 +76,32 @@ const modules = [
     "User-controlled reminders for appointments and routine checkups.",
   ],
 ] as const;
+const buddyOptions = [
+  [
+    "good",
+    "GOOD TO GO",
+    "PATCH: Status received. Keep the plan measured.",
+    "Ready to share a simple green signal.",
+  ],
+  [
+    "recovery",
+    "RECOVERY DAY",
+    "PATCH: Recovery is part of the plan. Keep it light.",
+    "A rest signal, not a failure signal.",
+  ],
+  [
+    "checkin",
+    "NEED A CHECK-IN",
+    "PATCH: Copy. A buddy signal is out; no private details shared.",
+    "Ask for contact without explaining everything.",
+  ],
+  [
+    "offline",
+    "OFFLINE",
+    "PATCH: Understood. Status will stay quiet until you return.",
+    "Pause communication for the next 24 hours.",
+  ],
+] as const;
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -141,6 +167,7 @@ function MedicPage() {
     logs: [] as LogEntry[],
     reminders: [] as Reminder[],
     settings: loadMedic(null).settings,
+    buddy: loadMedic(null).buddy,
   }));
   const [hydrated, setHydrated] = useState(false);
   const [form, setForm] = useState(initialForm);
@@ -153,6 +180,7 @@ function MedicPage() {
     notes: "",
   });
   const [breathing, setBreathing] = useState(0);
+  const [buddyNote, setBuddyNote] = useState("");
 
   useEffect(() => {
     setData(loadMedic(window.localStorage));
@@ -165,6 +193,7 @@ function MedicPage() {
       window.localStorage.setItem("btd.medic.logs.v1", JSON.stringify(data.logs));
       window.localStorage.setItem("btd.medic.reminders.v1", JSON.stringify(data.reminders));
       window.localStorage.setItem("btd.medic.settings.v1", JSON.stringify(data.settings));
+      window.localStorage.setItem("btd.medic.buddy.v1", JSON.stringify(data.buddy));
     } catch {
       setNotice("Storage unavailable; this session may not survive refresh.");
     }
@@ -257,6 +286,15 @@ function MedicPage() {
     }));
     setReminder({ title: "", category: "Routine", dueDate: "", notes: "" });
     setNotice("Reminder added to Checkup Queue.");
+  }
+  function setBuddyStatus(status: (typeof buddyOptions)[number][0]) {
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    setData((current) => ({
+      ...current,
+      buddy: { status, note: buddyNote.trim(), updatedAt: now.toISOString(), expiresAt },
+    }));
+    setNotice(`PATCH updated — ${buddyOptions.find(([key]) => key === status)?.[1] ?? "status"}.`);
   }
 
   return (
@@ -436,6 +474,68 @@ function MedicPage() {
               )}
             </div>
           </form>
+        </section>
+
+        <section className="mil-panel overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-2 p-4">
+            <div className="flex items-center gap-3">
+              <div className="grid h-14 w-14 place-items-center border-2 border-primary bg-background">
+                <img
+                  src="/theme/icons/25_medkit.png"
+                  alt="PATCH medkit"
+                  className="pixel h-10 w-10"
+                />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+                  PATCH // MEDIC BUDDY
+                </p>
+                <h2 className="pixel-title text-2xl text-primary">BUDDY CHECK-IN</h2>
+              </div>
+            </div>
+            <span className="border border-up px-2 py-1 text-[10px] font-bold text-up">
+              NO MEDICAL DETAILS SHARED
+            </span>
+          </div>
+          <div className="grid gap-4 p-4 lg:grid-cols-[0.8fr_1.2fr]">
+            <div>
+              <p className="text-sm text-foreground/85">
+                Choose a simple status to keep your people informed. PATCH never asks for private
+                health details.
+              </p>
+              <p className="mt-3 border-l-2 border-primary pl-3 text-xs text-muted-foreground">
+                {data.buddy.updatedAt
+                  ? `${data.buddy.status.toUpperCase()} · expires ${formatTime(data.buddy.expiresAt)}`
+                  : "No status shared yet · statuses expire after 24 hours."}
+              </p>
+              {data.buddy.note && (
+                <p className="mt-2 text-xs text-muted-foreground">Note: {data.buddy.note}</p>
+              )}
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {buddyOptions.map(([status, label, response, helper]) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => setBuddyStatus(status)}
+                  className={`border-2 p-3 text-left transition-colors hover:border-primary ${data.buddy.status === status ? "border-primary bg-primary/10" : "border-border bg-background"}`}
+                >
+                  <span className="block text-xs font-black tracking-widest text-primary">
+                    {label}
+                  </span>
+                  <span className="mt-1 block text-[10px] text-muted-foreground">{helper}</span>
+                  <span className="mt-2 block text-[10px] text-foreground/75">{response}</span>
+                </button>
+              ))}
+              <Input
+                className="sm:col-span-2"
+                value={buddyNote}
+                onChange={(event) => setBuddyNote(event.target.value)}
+                placeholder="Optional note — keep it non-medical"
+                maxLength={120}
+              />
+            </div>
+          </div>
         </section>
 
         <div className="grid gap-4 lg:grid-cols-2">

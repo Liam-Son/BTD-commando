@@ -4,6 +4,7 @@ export const MEDIC_STORAGE_KEYS = {
   logs: "btd.medic.logs.v1",
   reminders: "btd.medic.reminders.v1",
   settings: "btd.medic.settings.v1",
+  buddy: "btd.medic.buddy.v1",
 } as const;
 
 export type ReadinessBand = "GREEN" | "AMBER" | "ORANGE" | "RED";
@@ -43,6 +44,13 @@ export type Reminder = {
   notes: string;
   completedAt?: string;
 };
+export type BuddyStatus = "good" | "recovery" | "checkin" | "offline";
+export type BuddyState = {
+  status: BuddyStatus;
+  note: string;
+  updatedAt: string;
+  expiresAt: string;
+};
 export type MedicSettings = {
   hydrationTarget: number;
   sleepTarget: number;
@@ -53,6 +61,12 @@ export const DEFAULT_SETTINGS: MedicSettings = {
   hydrationTarget: 2000,
   sleepTarget: 8,
   weeklyActivityTarget: 3,
+};
+export const DEFAULT_BUDDY: BuddyState = {
+  status: "offline",
+  note: "",
+  updatedAt: "",
+  expiresAt: "",
 };
 export const READINESS_WEIGHTS = {
   sleep: 0.25,
@@ -161,7 +175,22 @@ export function loadMedic(storage: Storage | null) {
     sleepTarget: finite(raw.sleepTarget, DEFAULT_SETTINGS.sleepTarget),
     weeklyActivityTarget: finite(raw.weeklyActivityTarget, DEFAULT_SETTINGS.weeklyActivityTarget),
   };
-  return { checkins, logs, reminders, settings };
+  const rawBuddy = read<Partial<BuddyState>>(storage, MEDIC_STORAGE_KEYS.buddy, {});
+  const buddy: BuddyState = {
+    status:
+      rawBuddy.status === "good" ||
+      rawBuddy.status === "recovery" ||
+      rawBuddy.status === "checkin" ||
+      rawBuddy.status === "offline"
+        ? rawBuddy.status
+        : DEFAULT_BUDDY.status,
+    note: typeof rawBuddy.note === "string" ? rawBuddy.note : DEFAULT_BUDDY.note,
+    updatedAt:
+      typeof rawBuddy.updatedAt === "string" ? rawBuddy.updatedAt : DEFAULT_BUDDY.updatedAt,
+    expiresAt:
+      typeof rawBuddy.expiresAt === "string" ? rawBuddy.expiresAt : DEFAULT_BUDDY.expiresAt,
+  };
+  return { checkins, logs, reminders, settings, buddy };
 }
 export function saveMedic(storage: Storage | null, data: ReturnType<typeof loadMedic>) {
   return [
@@ -169,6 +198,7 @@ export function saveMedic(storage: Storage | null, data: ReturnType<typeof loadM
     write(storage, MEDIC_STORAGE_KEYS.logs, data.logs),
     write(storage, MEDIC_STORAGE_KEYS.reminders, data.reminders),
     write(storage, MEDIC_STORAGE_KEYS.settings, data.settings),
+    write(storage, MEDIC_STORAGE_KEYS.buddy, data.buddy),
   ].every(Boolean);
 }
 export function newLog(type: string, value: string, unit?: string, note?: string): LogEntry {
