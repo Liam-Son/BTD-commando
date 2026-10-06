@@ -1,44 +1,43 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useState } from "react";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { IntelSection } from "@/components/btd/IntelSection";
 import { NewsFeed } from "@/components/btd/NewsFeed";
+import { useAuth } from "@/hooks/useAuth";
 import { useLiveRankings } from "@/hooks/useLiveRankings";
-import { useState } from "react";
 
 export const Route = createFileRoute("/intel")({
   head: () => ({
     meta: [
       { title: "Intel | BTD Commando" },
-      {
-        name: "description",
-        content: "Macro context and field intelligence reference library.",
-      },
+      { name: "description", content: "Macro and news research context for field intelligence." },
     ],
   }),
   component: IntelPage,
 });
 
 function IntelPage() {
-  const { data, isLive } = useLiveRankings();
+  const { data } = useLiveRankings();
+  const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [newsStatus, setNewsStatus] = useState("SYNCING");
+  const setStableNewsStatus = useCallback((status: string) => setNewsStatus(status), []);
 
-  function selectIntelCategory(category: string) {
+  const selectIntelCategory = useCallback((category: string) => {
     setSelectedCategory(category);
     window.requestAnimationFrame(() => {
       const feed = document.getElementById("news-intelligence");
       if (!feed) return;
       const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
       const top = feed.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
-      window.scrollTo({ top, behavior: "smooth" });
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
     });
-  }
+  }, []);
 
   return (
     <main className="min-h-screen bg-background">
-      <CommandoHeader
-        active="intel"
-        status={<span>{isLive ? "Intel feed live" : "Intel snapshot"}</span>}
-      />
+      <CommandoHeader active="intel" signedIn={!!user} status={<span>Intel {newsStatus}</span>} />
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
         <section className="border-b border-border pb-4">
           <p className="pixel-title text-sm text-primary">Operations desk / field library</p>
@@ -52,6 +51,7 @@ function IntelPage() {
           assets={data?.assets.map((asset) => asset.symbol) ?? []}
           filter={selectedCategory}
           onFilterChange={setSelectedCategory}
+          onStatusChange={setStableNewsStatus}
         />
       </div>
     </main>
