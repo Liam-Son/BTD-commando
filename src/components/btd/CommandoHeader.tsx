@@ -46,7 +46,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
     <header className="sticky top-0 z-40 border-b-2 border-primary/50 bg-background">
       <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-4">
         <Link to="/" className="flex min-w-0 items-center gap-2">
-          <PixelIcon name={ICONS.aim} className="pixel h-8 w-8 shrink-0" />
+          <img src="/theme/brand/commando-patch.png" alt="" aria-hidden="true" width={40} height={40} className="pixel h-10 w-10 shrink-0 object-contain" />
           <div className="min-w-0">
             <h1 className="pixel-title text-xl leading-none text-primary">
               BTD COMMANDO
