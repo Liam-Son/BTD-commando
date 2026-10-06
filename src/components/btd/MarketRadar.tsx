@@ -1,7 +1,6 @@
 import type { RankedAsset } from "@/lib/btd-core";
 import { ratingFor } from "@/lib/btd-core";
 
-
 type Props = {
   assets: RankedAsset[];
   updatedAt?: string;
@@ -90,38 +89,47 @@ export function MarketRadar({ assets, updatedAt }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {top.map((a, i) => {
-                  const sig = ratingFor(a.btdScore).label;
-                  return (
-                    <tr key={a.symbol} className="border-t border-border/70 hover:bg-primary/5">
-                      <td className="tabular px-2 py-2 text-muted-foreground">{i + 1}</td>
-                      <td className="px-2 py-2 font-bold">{a.symbol}</td>
-                      <td className="tabular px-2 py-2 text-right">
-                        {a.price >= 1 ? a.price.toFixed(2) : a.price.toPrecision(3)}
-                      </td>
-                      <td className="tabular px-2 py-2 text-right font-bold text-primary">
-                        {a.btdScore.toFixed(0)}
-                      </td>
-                      <td className="px-2 py-2">
-                        <span
-                          className={
-                            sig === "ACQUIRE"
-                              ? "sig-acquire px-1.5 py-0.5 text-[9px]"
-                              : sig === "HOT"
-                                ? "sig-hot px-1.5 py-0.5 text-[9px]"
-                                : sig === "WATCH"
-                                  ? "sig-watch px-1.5 py-0.5 text-[9px]"
-                                  : sig === "TRACK"
-                                    ? "sig-track px-1.5 py-0.5 text-[9px]"
-                                    : "sig-stand px-1.5 py-0.5 text-[9px]"
-                          }
-                        >
-                          {sig}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {top.length ? (
+                  top.map((a, i) => {
+                    const sig = ratingFor(a.btdScore).label;
+                    return (
+                      <tr key={a.symbol} className="border-t border-border/70 hover:bg-primary/5">
+                        <td className="tabular px-2 py-2 text-muted-foreground">{i + 1}</td>
+                        <td className="px-2 py-2 font-bold">{a.symbol}</td>
+                        <td className="tabular px-2 py-2 text-right">
+                          {a.price >= 1 ? a.price.toFixed(2) : a.price.toPrecision(3)}
+                        </td>
+                        <td className="tabular px-2 py-2 text-right font-bold text-primary">
+                          {a.btdScore.toFixed(0)}
+                        </td>
+                        <td className="px-2 py-2">
+                          <span
+                            className={
+                              sig === "ACQUIRE"
+                                ? "sig-acquire px-1.5 py-0.5 text-[9px]"
+                                : sig === "HOT"
+                                  ? "sig-hot px-1.5 py-0.5 text-[9px]"
+                                  : sig === "WATCH"
+                                    ? "sig-watch px-1.5 py-0.5 text-[9px]"
+                                    : sig === "TRACK"
+                                      ? "sig-track px-1.5 py-0.5 text-[9px]"
+                                      : "sig-stand px-1.5 py-0.5 text-[9px]"
+                            }
+                          >
+                            {sig}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-6 text-center text-xs text-muted-foreground">
+                      No verified ranking records are available. Retry the data feed before
+                      interpreting this radar.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

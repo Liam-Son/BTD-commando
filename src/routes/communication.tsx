@@ -4,6 +4,7 @@ import { Activity, AlertTriangle, BookmarkPlus, Radio, Search, Trash2 } from "lu
 import { createFileRoute } from "@tanstack/react-router";
 import { NewsFeed } from "@/components/btd/NewsFeed";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
+import { DataStatus, type DataStatusState } from "@/components/btd/DataStatus";
 import { useLiveRankings } from "@/hooks/useLiveRankings";
 import { fmtPct, ratingFor, type AssetClass } from "@/lib/btd-core";
 
@@ -36,17 +37,25 @@ const ECHO_SIGNALS = [
 ] as const;
 
 function CommunicationPage() {
-  const { data, isPending, error, isLive } = useLiveRankings();
+  const { data, isPending, error, isLive, refetch } = useLiveRankings();
   const [newsFilter, setNewsFilter] = useState("all");
   const [newsState, setNewsState] = useState("SYNCING");
   const [feed, setFeed] = useState<FeedTab>("signals");
   const [filter, setFilter] = useState<AssetFilter>("ALL");
   const [search, setSearch] = useState("");
   const [draft, setDraft] = useState("");
-  const { value: notes, setValue: setNotes, issue: notesIssue } = useDataset<AnalystNote[]>("notes", () => []);
+  const {
+    value: notes,
+    setValue: setNotes,
+    issue: notesIssue,
+  } = useDataset<AnalystNote[]>("notes", () => []);
   const [echoState, setEchoState] = useState<EchoState>("CLEAR");
   const [echoSignal, setEchoSignal] = useState("Signal channel ready.");
-  const { value: echoEvents, setValue: setEchoEvents, issue: echoIssue } = useDataset<EchoEvent[]>("echo", () => []);
+  const {
+    value: echoEvents,
+    setValue: setEchoEvents,
+    issue: echoIssue,
+  } = useDataset<EchoEvent[]>("echo", () => []);
 
   const assets = data?.assets ?? [];
   const normalizedSearch = search.trim().toLowerCase();
@@ -69,6 +78,15 @@ function CommunicationPage() {
     .slice(0, 5);
   const strongest = visibleAssets[0];
   const maxRegionCount = regions[0]?.[1] ?? 1;
+  const dataState: DataStatusState = isPending
+    ? "loading"
+    : error
+      ? "offline"
+      : !data?.assets.length
+        ? "empty"
+        : isLive
+          ? "live"
+          : "snapshot";
 
   function saveNote(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,13 +98,11 @@ function CommunicationPage() {
     );
     setNotes(next);
     setDraft("");
-
   }
 
   function removeNote(id: number) {
     const next = notes.filter((note) => note.id !== id);
     setNotes(next);
-
   }
 
   function recordEcho(state: EchoState, label: string, message: string) {
@@ -95,7 +111,6 @@ function CommunicationPage() {
     setEchoState(state);
     setEchoSignal(message);
     setEchoEvents(next);
-
   }
 
   function clearEchoChannel() {
@@ -103,7 +118,6 @@ function CommunicationPage() {
     setEchoState("CLEAR");
     setEchoSignal(message);
     setEchoEvents([]);
-
   }
 
   return (
@@ -118,8 +132,30 @@ function CommunicationPage() {
         }
       />
 
+      <div className="mx-auto max-w-[1600px] px-4 pt-4">
+        <DataStatus
+          state={dataState}
+          detail={
+            dataState === "offline"
+              ? "BTD signals are unavailable. ECHO can still record local channel events."
+              : dataState === "empty"
+                ? "The feed responded without ranking signals. No action signal is being implied."
+                : dataState === "loading"
+                  ? "Waiting for the first verified BTD snapshot."
+                  : `${data?.assets.length ?? 0} ranking signals available for research context.`
+          }
+          updatedAt={data?.updatedAt}
+          sources="BTD ranking snapshot"
+          onRetry={() => void refetch()}
+        />
+      </div>
+
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
-        {(notesIssue || echoIssue) && <p role="alert" className="text-warn">{notesIssue || echoIssue}</p>}
+        {(notesIssue || echoIssue) && (
+          <p role="alert" className="text-warn">
+            {notesIssue || echoIssue}
+          </p>
+        )}
         <section className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-4">
           <div>
             <p className="pixel-title text-sm text-primary">Operations desk / intel channel</p>
@@ -326,7 +362,12 @@ function CommunicationPage() {
                 </div>
               </>
             ) : (
-              <NewsFeed assets={assets.map((asset) => asset.symbol)} filter={newsFilter} onFilterChange={setNewsFilter} onStatusChange={setNewsState} />
+              <NewsFeed
+                assets={assets.map((asset) => asset.symbol)}
+                filter={newsFilter}
+                onFilterChange={setNewsFilter}
+                onStatusChange={setNewsState}
+              />
             )}
           </section>
 
@@ -351,7 +392,11 @@ function CommunicationPage() {
                   state={isLive ? "ONLINE" : "SNAPSHOT"}
                   online={isLive}
                 />
-                <StatusRow label="External headlines" state={feed === "news" ? newsState : "OPEN NEWS TO CHECK"} online={feed === "news" && newsState === "ONLINE"} />
+                <StatusRow
+                  label="External headlines"
+                  state={feed === "news" ? newsState : "OPEN NEWS TO CHECK"}
+                  online={feed === "news" && newsState === "ONLINE"}
+                />
                 {data?.degraded.length ? (
                   <div className="border-t border-border pt-3 text-xs text-warn">
                     Partial data: {data.degraded.join(", ")}

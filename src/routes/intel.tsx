@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { IntelSection } from "@/components/btd/IntelSection";
 import { NewsFeed } from "@/components/btd/NewsFeed";
+import { DataStatus, type DataStatusState } from "@/components/btd/DataStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { useLiveRankings } from "@/hooks/useLiveRankings";
 
@@ -17,11 +18,20 @@ export const Route = createFileRoute("/intel")({
 });
 
 function IntelPage() {
-  const { data } = useLiveRankings();
+  const { data, isPending, error, isLive, refetch } = useLiveRankings();
   const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [newsStatus, setNewsStatus] = useState("SYNCING");
   const setStableNewsStatus = useCallback((status: string) => setNewsStatus(status), []);
+  const dataState: DataStatusState = isPending
+    ? "loading"
+    : error
+      ? "offline"
+      : !data?.assets.length
+        ? "empty"
+        : isLive
+          ? "live"
+          : "snapshot";
 
   const selectIntelCategory = useCallback((category: string) => {
     setSelectedCategory(category);
@@ -38,6 +48,23 @@ function IntelPage() {
   return (
     <main className="min-h-screen bg-background">
       <CommandoHeader active="intel" signedIn={!!user} status={<span>Intel {newsStatus}</span>} />
+      <div className="mx-auto max-w-[1600px] px-4 pt-4">
+        <DataStatus
+          state={dataState}
+          detail={
+            dataState === "offline"
+              ? "Ranking context is unavailable. News intelligence may still load independently."
+              : dataState === "empty"
+                ? "The ranking source responded without assets, so ticker-linked context is unavailable."
+                : dataState === "loading"
+                  ? "Waiting for the first verified ranking snapshot."
+                  : `${data?.assets.length ?? 0} assets available for ticker-linked context.`
+          }
+          updatedAt={data?.updatedAt}
+          sources="BTD ranking snapshot"
+          onRetry={() => void refetch()}
+        />
+      </div>
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
         <section className="border-b border-border pb-4">
           <p className="pixel-title text-sm text-primary">Operations desk / field library</p>

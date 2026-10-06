@@ -1,4 +1,12 @@
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import type { PulsePoint } from "@/hooks/useLiveRankings";
 
 const fmtTime = (t: number) =>
@@ -29,11 +37,13 @@ export function LivePulseChart({
             Live market BTD pulse
           </p>
           <h2 className="mt-1 text-lg font-bold leading-tight">
-            Average BTD score across {assetCount} assets
+            {assetCount
+              ? `Average BTD score across ${assetCount} assets`
+              : "No verified market snapshot yet"}
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Recomputed from live prices every 60 seconds — valuation multiples, drawdown and RSI
-            all move with the market print.
+            Recomputed from live prices every 60 seconds — valuation multiples, drawdown and RSI all
+            move with the market print.
           </p>
         </div>
         <div className="text-right">
@@ -50,7 +60,11 @@ export function LivePulseChart({
       <div className="mt-4 h-[180px]">
         {pulse.length < 2 ? (
           <div className="flex h-full items-center justify-center rounded-sm border border-dashed border-border text-xs text-muted-foreground">
-            {isLive ? "Collecting live ticks…" : "Waiting for the first live price tick…"}
+            {assetCount === 0
+              ? "The ranking feed has not returned usable records. No score is being inferred."
+              : isLive
+                ? "Collecting live ticks…"
+                : "Waiting for the first live price tick…"}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">

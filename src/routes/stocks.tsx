@@ -4,6 +4,7 @@ import { getRankings } from "@/lib/btd.functions";
 import { fmtPct, ratingFor } from "@/lib/btd-core";
 import { RankingsTable } from "@/components/btd/RankingsTable";
 import { RatingBadge } from "@/components/btd/RatingBadge";
+import { DataStatus, type DataStatusState } from "@/components/btd/DataStatus";
 import { buildFaqJsonLd, type FaqItem } from "@/lib/structured-data";
 
 const TITLE = "Stocks to Buy on the Dip — Live BTD Index™ Equity Rankings";
@@ -42,9 +43,7 @@ export const Route = createFileRoute("/stocks")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: URL }],
-    scripts: [
-      { type: "application/ld+json", children: JSON.stringify(buildFaqJsonLd(FAQ)) },
-    ],
+    scripts: [{ type: "application/ld+json", children: JSON.stringify(buildFaqJsonLd(FAQ)) }],
   }),
   component: StocksPage,
 });
@@ -52,7 +51,7 @@ export const Route = createFileRoute("/stocks")({
 const REFRESH_MS = 5 * 60 * 1000;
 
 function StocksPage() {
-  const { data, isPending, error, dataUpdatedAt } = useQuery({
+  const { data, isPending, error, dataUpdatedAt, refetch } = useQuery({
     queryKey: ["btd", "rankings"],
     queryFn: () => getRankings(),
     refetchInterval: REFRESH_MS,
@@ -62,6 +61,13 @@ function StocksPage() {
 
   const stocks = (data?.assets ?? []).filter((a) => a.assetClass === "Stock");
   const top = stocks[0];
+  const dataState: DataStatusState = isPending
+    ? "loading"
+    : error
+      ? "offline"
+      : !stocks.length
+        ? "empty"
+        : "snapshot";
 
   return (
     <main className="min-h-screen bg-background">
@@ -87,6 +93,21 @@ function StocksPage() {
       </header>
 
       <div className="mx-auto max-w-[1600px] space-y-6 px-4 py-6">
+        <DataStatus
+          state={dataState}
+          detail={
+            dataState === "offline"
+              ? "The equity ranking source did not return a usable snapshot. No ranking is being presented as current."
+              : dataState === "empty"
+                ? "The source responded without equity records. This is an empty feed, not a zero-score market."
+                : dataState === "loading"
+                  ? "Waiting for the first verified equity snapshot."
+                  : `${stocks.length} equities available for research-only ranking.`
+          }
+          updatedAt={dataUpdatedAt}
+          sources="Yahoo Finance · alternative.me"
+          onRetry={() => void refetch()}
+        />
         <section className="grid gap-4 md:grid-cols-3">
           <div className="rounded border border-border bg-surface p-5">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">

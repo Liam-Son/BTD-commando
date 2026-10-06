@@ -4,6 +4,7 @@ import { getRankings } from "@/lib/btd.functions";
 import { fmtPct, ratingFor } from "@/lib/btd-core";
 import { RankingsTable } from "@/components/btd/RankingsTable";
 import { RatingBadge } from "@/components/btd/RatingBadge";
+import { DataStatus, type DataStatusState } from "@/components/btd/DataStatus";
 import { buildFaqJsonLd, type FaqItem } from "@/lib/structured-data";
 
 const TITLE = "Crypto to Buy on the Dip — Live BTD Index™ Crypto Rankings";
@@ -50,7 +51,7 @@ export const Route = createFileRoute("/crypto")({
 const REFRESH_MS = 5 * 60 * 1000;
 
 function CryptoPage() {
-  const { data, isPending, error, dataUpdatedAt } = useQuery({
+  const { data, isPending, error, dataUpdatedAt, refetch } = useQuery({
     queryKey: ["btd", "rankings"],
     queryFn: () => getRankings(),
     refetchInterval: REFRESH_MS,
@@ -60,6 +61,13 @@ function CryptoPage() {
 
   const coins = (data?.assets ?? []).filter((a) => a.assetClass === "Crypto");
   const top = coins[0];
+  const dataState: DataStatusState = isPending
+    ? "loading"
+    : error
+      ? "offline"
+      : !coins.length
+        ? "empty"
+        : "snapshot";
 
   return (
     <main className="min-h-screen bg-background">
@@ -84,6 +92,21 @@ function CryptoPage() {
       </header>
 
       <div className="mx-auto max-w-[1600px] space-y-6 px-4 py-6">
+        <DataStatus
+          state={dataState}
+          detail={
+            dataState === "offline"
+              ? "The crypto ranking source did not return a usable snapshot. No ranking is being presented as current."
+              : dataState === "empty"
+                ? "The source responded without crypto records. This is an empty feed, not a zero-score market."
+                : dataState === "loading"
+                  ? "Waiting for the first verified crypto snapshot."
+                  : `${coins.length} crypto assets available for research-only ranking.`
+          }
+          updatedAt={dataUpdatedAt}
+          sources="CoinGecko · alternative.me"
+          onRetry={() => void refetch()}
+        />
         <section className="grid gap-4 md:grid-cols-3">
           <div className="rounded border border-border bg-surface p-5">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">

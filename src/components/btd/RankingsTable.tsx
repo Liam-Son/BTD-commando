@@ -1,21 +1,9 @@
 import { useMemo, useState } from "react";
-import {
-  fmtCap,
-  fmtPct,
-  fmtPrice,
-  type AssetClass,
-  type RankedAsset,
-} from "@/lib/btd-core";
+import { fmtCap, fmtPct, fmtPrice, type AssetClass, type RankedAsset } from "@/lib/btd-core";
 import { RatingBadge, ScoreCell } from "./RatingBadge";
 
 type SortKey =
-  | "btdScore"
-  | "price"
-  | "changeDay"
-  | "changeWeek"
-  | "changeMonth"
-  | "marketCap"
-  | "assetClass";
+  "btdScore" | "price" | "changeDay" | "changeWeek" | "changeMonth" | "marketCap" | "assetClass";
 
 const CLASSES: (AssetClass | "All")[] = ["All", "Stock", "Crypto", "ETF", "Commodity", "Index"];
 
@@ -29,9 +17,7 @@ const COLUMNS: { key: SortKey; label: string; align: "left" | "right" }[] = [
 ];
 
 function Delta({ v }: { v: number }) {
-  return (
-    <span className={`tabular text-xs ${v >= 0 ? "text-up" : "text-down"}`}>{fmtPct(v)}</span>
-  );
+  return <span className={`tabular text-xs ${v >= 0 ? "text-up" : "text-down"}`}>{fmtPct(v)}</span>;
 }
 
 function Logo({ asset }: { asset: RankedAsset }) {
@@ -52,13 +38,7 @@ function Logo({ asset }: { asset: RankedAsset }) {
   );
 }
 
-export function RankingsTable({
-  assets,
-  updatedAt,
-}: {
-  assets: RankedAsset[];
-  updatedAt: string;
-}) {
+export function RankingsTable({ assets, updatedAt }: { assets: RankedAsset[]; updatedAt: string }) {
   const [sort, setSort] = useState<SortKey>("btdScore");
   const [dir, setDir] = useState<"asc" | "desc">("desc");
   const [filter, setFilter] = useState<AssetClass | "All">("All");
@@ -144,110 +124,121 @@ export function RankingsTable({
             </tr>
           </thead>
           <tbody>
-            {rows.map((a, i) => {
-              const id = `${a.assetClass}-${a.symbol}`;
-              const isOpen = open === id;
-              return (
-                <tr
-                  key={id}
-                  onClick={() => setOpen(isOpen ? null : id)}
-                  className="row-enter cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-surface-2"
+            {rows.length ? (
+              rows.map((a, i) => {
+                const id = `${a.assetClass}-${a.symbol}`;
+                const isOpen = open === id;
+                return (
+                  <tr
+                    key={id}
+                    onClick={() => setOpen(isOpen ? null : id)}
+                    className="row-enter cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-surface-2"
+                  >
+                    <td className="tabular px-3 py-2.5 text-xs text-muted-foreground">{i + 1}</td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <Logo asset={a} />
+                        <div className="min-w-0">
+                          <p className="truncate text-[13px] font-semibold leading-tight">
+                            {a.name}
+                          </p>
+                          <p className="tabular text-[11px] text-muted-foreground">
+                            {a.symbol} · {a.country}
+                          </p>
+                        </div>
+                      </div>
+                      {isOpen && (
+                        <div className="mt-3 space-y-3 rounded-sm bg-background p-3">
+                          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+                            {a.factors.map((f) => (
+                              <div key={f.key}>
+                                <div className="flex items-baseline justify-between gap-2">
+                                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                    {f.label}{" "}
+                                    <span className="text-muted-foreground/60">
+                                      {Math.round(f.weight * 100)}%
+                                    </span>
+                                  </span>
+                                  <span className="tabular text-xs font-bold">
+                                    {f.points.toFixed(1)}
+                                    <span className="font-normal text-muted-foreground">
+                                      /{f.max}
+                                    </span>
+                                  </span>
+                                </div>
+                                <div className="mt-1 h-1 overflow-hidden rounded-full bg-secondary">
+                                  <div
+                                    className="score-bar h-full"
+                                    style={{ width: `${f.value}%` }}
+                                  />
+                                </div>
+                                <p className="tabular mt-1 text-[10px] text-muted-foreground">
+                                  {f.value.toFixed(0)}/100 · {f.detail}
+                                  {f.proxy ? " (proxy)" : ""}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-2 text-[11px]">
+                            <span className="tabular font-semibold">
+                              Total {a.btdScore.toFixed(1)} / 100
+                            </span>
+                            <span className="tabular text-muted-foreground">
+                              Input reliability {a.confidence}%
+                            </span>
+                            <span className="text-muted-foreground">{a.reasons.join(" · ")}</span>
+                          </div>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 text-[11px] uppercase tracking-wide text-muted-foreground">
+                      {a.assetClass}
+                    </td>
+                    <td className="tabular px-3 py-2.5 text-right text-[13px]">
+                      ${fmtPrice(a.price)}
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      <Delta v={a.changeDay} />
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      <Delta v={a.changeWeek} />
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      <Delta v={a.changeMonth} />
+                    </td>
+                    <td className="tabular px-3 py-2.5 text-right text-xs text-muted-foreground">
+                      {fmtCap(a.marketCap)}
+                    </td>
+                    <td className="tabular px-3 py-2.5 text-right text-xs text-muted-foreground">
+                      {a.confidence}%
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <RatingBadge score={a.btdScore} />
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <ScoreCell score={a.btdScore} />
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td
+                  colSpan={COLUMNS.length + 4}
+                  className="px-4 py-10 text-center text-sm text-muted-foreground"
                 >
-                  <td className="tabular px-3 py-2.5 text-xs text-muted-foreground">{i + 1}</td>
-                  <td className="px-3 py-2.5">
-                    <div className="flex items-center gap-2.5">
-                      <Logo asset={a} />
-                      <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold leading-tight">
-                          {a.name}
-                        </p>
-                        <p className="tabular text-[11px] text-muted-foreground">
-                          {a.symbol} · {a.country}
-                        </p>
-                      </div>
-                    </div>
-                    {isOpen && (
-                      <div className="mt-3 space-y-3 rounded-sm bg-background p-3">
-                        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-                          {a.factors.map((f) => (
-                            <div key={f.key}>
-                              <div className="flex items-baseline justify-between gap-2">
-                                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                                  {f.label}{" "}
-                                  <span className="text-muted-foreground/60">
-                                    {Math.round(f.weight * 100)}%
-                                  </span>
-                                </span>
-                                <span className="tabular text-xs font-bold">
-                                  {f.points.toFixed(1)}
-                                  <span className="font-normal text-muted-foreground">
-                                    /{f.max}
-                                  </span>
-                                </span>
-                              </div>
-                              <div className="mt-1 h-1 overflow-hidden rounded-full bg-secondary">
-                                <div
-                                  className="score-bar h-full"
-                                  style={{ width: `${f.value}%` }}
-                                />
-                              </div>
-                              <p className="tabular mt-1 text-[10px] text-muted-foreground">
-                                {f.value.toFixed(0)}/100 · {f.detail}
-                                {f.proxy ? " (proxy)" : ""}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-2 text-[11px]">
-                          <span className="tabular font-semibold">
-                            Total {a.btdScore.toFixed(1)} / 100
-                          </span>
-                          <span className="tabular text-muted-foreground">
-                            Input reliability {a.confidence}%
-                          </span>
-                          <span className="text-muted-foreground">
-                            {a.reasons.join(" · ")}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-3 py-2.5 text-[11px] uppercase tracking-wide text-muted-foreground">
-                    {a.assetClass}
-                  </td>
-                  <td className="tabular px-3 py-2.5 text-right text-[13px]">
-                    ${fmtPrice(a.price)}
-                  </td>
-                  <td className="px-3 py-2.5 text-right">
-                    <Delta v={a.changeDay} />
-                  </td>
-                  <td className="px-3 py-2.5 text-right">
-                    <Delta v={a.changeWeek} />
-                  </td>
-                  <td className="px-3 py-2.5 text-right">
-                    <Delta v={a.changeMonth} />
-                  </td>
-                  <td className="tabular px-3 py-2.5 text-right text-xs text-muted-foreground">
-                    {fmtCap(a.marketCap)}
-                  </td>
-                  <td className="tabular px-3 py-2.5 text-right text-xs text-muted-foreground">
-                    {a.confidence}%
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <RatingBadge score={a.btdScore} />
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <ScoreCell score={a.btdScore} />
-                  </td>
-                </tr>
-              );
-            })}
+                  No verified ranking records are available for this board. Retry the data feed
+                  before interpreting the empty table.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
       <p className="border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
-        Input reliability is a heuristic based on factor disagreement and proxy weights, not a probability of profit. Click any row to expand its quantitative factor breakdown. Scores are research signals, not
-        investment advice.
+        Input reliability is a heuristic based on factor disagreement and proxy weights, not a
+        probability of profit. Click any row to expand its quantitative factor breakdown. Scores are
+        research signals, not investment advice.
       </p>
     </section>
   );

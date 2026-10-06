@@ -15,10 +15,13 @@ import { Route as ArmoryRouteImport } from './routes/armory'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CommunicationRouteImport } from './routes/communication'
 import { Route as CryptoRouteImport } from './routes/crypto'
+import { Route as DataToolsRouteImport } from './routes/data-tools'
+import { Route as HunterRouteImport } from './routes/hunter'
 import { Route as IndexDothtmlRouteImport } from './routes/index[.]html'
 import { Route as IntelRouteImport } from './routes/intel'
 import { Route as MedicRouteImport } from './routes/medic'
 import { Route as OpsRouteImport } from './routes/ops'
+import { Route as RangerRouteImport } from './routes/ranger'
 import { Route as SergeantRouteImport } from './routes/sergeant'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StocksRouteImport } from './routes/stocks'
@@ -55,6 +58,16 @@ const CryptoRoute = CryptoRouteImport.update({
   path: '/crypto',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DataToolsRoute = DataToolsRouteImport.update({
+  id: '/data-tools',
+  path: '/data-tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HunterRoute = HunterRouteImport.update({
+  id: '/hunter',
+  path: '/hunter',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexDothtmlRoute = IndexDothtmlRouteImport.update({
   id: '/index.html',
   path: '/index.html',
@@ -73,6 +86,11 @@ const MedicRoute = MedicRouteImport.update({
 const OpsRoute = OpsRouteImport.update({
   id: '/ops',
   path: '/ops',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RangerRoute = RangerRouteImport.update({
+  id: '/ranger',
+  path: '/ranger',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SergeantRoute = SergeantRouteImport.update({
@@ -112,10 +130,13 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
+  '/data-tools': typeof DataToolsRoute
+  '/hunter': typeof HunterRoute
   '/index.html': typeof IndexDothtmlRoute
   '/intel': typeof IntelRoute
   '/medic': typeof MedicRoute
   '/ops': typeof OpsRoute
+  '/ranger': typeof RangerRoute
   '/sergeant': typeof SergeantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
@@ -129,10 +150,13 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
+  '/data-tools': typeof DataToolsRoute
+  '/hunter': typeof HunterRoute
   '/index.html': typeof IndexDothtmlRoute
   '/intel': typeof IntelRoute
   '/medic': typeof MedicRoute
   '/ops': typeof OpsRoute
+  '/ranger': typeof RangerRoute
   '/sergeant': typeof SergeantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
@@ -148,10 +172,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/communication': typeof CommunicationRoute
   '/crypto': typeof CryptoRoute
+  '/data-tools': typeof DataToolsRoute
+  '/hunter': typeof HunterRoute
   '/index.html': typeof IndexDothtmlRoute
   '/intel': typeof IntelRoute
   '/medic': typeof MedicRoute
   '/ops': typeof OpsRoute
+  '/ranger': typeof RangerRoute
   '/sergeant': typeof SergeantRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stocks': typeof StocksRoute
@@ -167,10 +194,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/communication'
     | '/crypto'
+    | '/data-tools'
+    | '/hunter'
     | '/index.html'
     | '/intel'
     | '/medic'
     | '/ops'
+    | '/ranger'
     | '/sergeant'
     | '/sitemap.xml'
     | '/stocks'
@@ -184,10 +214,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/communication'
     | '/crypto'
+    | '/data-tools'
+    | '/hunter'
     | '/index.html'
     | '/intel'
     | '/medic'
     | '/ops'
+    | '/ranger'
     | '/sergeant'
     | '/sitemap.xml'
     | '/stocks'
@@ -202,10 +235,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/communication'
     | '/crypto'
+    | '/data-tools'
+    | '/hunter'
     | '/index.html'
     | '/intel'
     | '/medic'
     | '/ops'
+    | '/ranger'
     | '/sergeant'
     | '/sitemap.xml'
     | '/stocks'
@@ -221,10 +257,13 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CommunicationRoute: typeof CommunicationRoute
   CryptoRoute: typeof CryptoRoute
+  DataToolsRoute: typeof DataToolsRoute
+  HunterRoute: typeof HunterRoute
   IndexDothtmlRoute: typeof IndexDothtmlRoute
   IntelRoute: typeof IntelRoute
   MedicRoute: typeof MedicRoute
   OpsRoute: typeof OpsRoute
+  RangerRoute: typeof RangerRoute
   SergeantRoute: typeof SergeantRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StocksRoute: typeof StocksRoute
@@ -276,6 +315,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CryptoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/data-tools': {
+      id: '/data-tools'
+      path: '/data-tools'
+      fullPath: '/data-tools'
+      preLoaderRoute: typeof DataToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hunter': {
+      id: '/hunter'
+      path: '/hunter'
+      fullPath: '/hunter'
+      preLoaderRoute: typeof HunterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/index.html': {
       id: '/index.html'
       path: '/index.html'
@@ -302,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/ops'
       fullPath: '/ops'
       preLoaderRoute: typeof OpsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ranger': {
+      id: '/ranger'
+      path: '/ranger'
+      fullPath: '/ranger'
+      preLoaderRoute: typeof RangerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sergeant': {
@@ -367,10 +427,13 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CommunicationRoute: CommunicationRoute,
   CryptoRoute: CryptoRoute,
+  DataToolsRoute: DataToolsRoute,
+  HunterRoute: HunterRoute,
   IndexDothtmlRoute: IndexDothtmlRoute,
   IntelRoute: IntelRoute,
   MedicRoute: MedicRoute,
   OpsRoute: OpsRoute,
+  RangerRoute: RangerRoute,
   SergeantRoute: SergeantRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StocksRoute: StocksRoute,

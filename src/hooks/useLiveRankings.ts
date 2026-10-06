@@ -53,7 +53,11 @@ export function useLiveRankings() {
     const stamp = quotes.data?.fetchedAt ?? data.updatedAt;
     if (lastTick.current === stamp) return;
     lastTick.current = stamp;
-    setPulse((prev) => [...prev, { t: Date.parse(stamp) || Date.now(), score: averageScore(data.assets) }].slice(-60));
+    setPulse((prev) =>
+      [...prev, { t: Date.parse(stamp) || Date.now(), score: averageScore(data.assets) }].slice(
+        -60,
+      ),
+    );
   }, [data, quotes.data?.fetchedAt]);
 
   return {
@@ -61,8 +65,11 @@ export function useLiveRankings() {
     pulse,
     isPending: snapshot.isPending,
     error: snapshot.error,
+    refetch: snapshot.refetch,
     snapshotUpdatedAt: snapshot.dataUpdatedAt,
-    liveUpdatedAt: quotes.data?.fetchedAt ? Date.parse(quotes.data.fetchedAt) : snapshot.dataUpdatedAt,
+    liveUpdatedAt: quotes.data?.fetchedAt
+      ? Date.parse(quotes.data.fetchedAt)
+      : snapshot.dataUpdatedAt,
     isLive: Boolean(quotes.data?.prices && Object.keys(quotes.data.prices).length),
     isRefreshingLive: quotes.isFetching,
   };

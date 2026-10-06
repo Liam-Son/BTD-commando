@@ -12,6 +12,7 @@ import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { SniperHero } from "@/components/btd/SniperHero";
 import { MarketRadar } from "@/components/btd/MarketRadar";
 import { IntelSection } from "@/components/btd/IntelSection";
+import { DataStatus, type DataStatusState } from "@/components/btd/DataStatus";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -111,15 +112,8 @@ function Skeleton() {
 }
 
 function Terminal() {
-  const {
-    data,
-    pulse,
-    isPending,
-    error,
-    liveUpdatedAt,
-    isLive,
-    isRefreshingLive,
-  } = useLiveRankings();
+  const { data, pulse, isPending, error, liveUpdatedAt, isLive, isRefreshingLive, refetch } =
+    useLiveRankings();
   const { user } = useAuth();
 
   // Google sign-in returns to the site root; forward to the saved destination.
@@ -134,6 +128,15 @@ function Terminal() {
   }, [user, navigate]);
 
   const top = data?.assets[0];
+  const dataState: DataStatusState = isPending
+    ? "loading"
+    : error
+      ? "offline"
+      : !data?.assets.length
+        ? "empty"
+        : isLive
+          ? "live"
+          : "snapshot";
 
   return (
     <main className="min-h-screen bg-background">
@@ -160,6 +163,24 @@ function Terminal() {
         }
       />
 
+      <div className="mx-auto max-w-[1600px] px-4 pt-4">
+        <DataStatus
+          state={dataState}
+          detail={
+            dataState === "offline"
+              ? "The ranking source did not return a usable snapshot. No score is being presented as current."
+              : dataState === "empty"
+                ? "The ranking source responded without assets. This is an empty feed, not a zero-score market."
+                : dataState === "loading"
+                  ? "Waiting for the first verified ranking snapshot."
+                  : `${data?.assets.length ?? 0} assets available for research-only ranking.`
+          }
+          updatedAt={data?.updatedAt ?? liveUpdatedAt}
+          sources="Yahoo Finance · CoinGecko · alternative.me"
+          onRetry={() => void refetch()}
+        />
+      </div>
+
       {data && <Ticker assets={data.assets} />}
 
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
@@ -183,9 +204,11 @@ function Terminal() {
           </section>
         ) : null}
 
-
         {data && (
-          <MarketRadar assets={data.assets} updatedAt={new Date(liveUpdatedAt || Date.now()).toISOString()} />
+          <MarketRadar
+            assets={data.assets}
+            updatedAt={new Date(liveUpdatedAt || Date.now()).toISOString()}
+          />
         )}
         <section className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
           <div className="mil-panel p-6">
@@ -197,12 +220,10 @@ function Terminal() {
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
               BTD Index™ v1.0 scores every asset as{" "}
-              <span className="tabular text-foreground">
-                0.40V + 0.25M + 0.20F + 0.10Q + 0.05R
-              </span>{" "}
-              — peer-relative valuation (P/E, P/B percentiles), oversold momentum (RSI 14),
-              market fear (Fear &amp; Greed, VIX), balance-sheet quality (ROE, debt-to-equity) and
-              risk (beta) — each normalized to 0–100.
+              <span className="tabular text-foreground">0.40V + 0.25M + 0.20F + 0.10Q + 0.05R</span>{" "}
+              — peer-relative valuation (P/E, P/B percentiles), oversold momentum (RSI 14), market
+              fear (Fear &amp; Greed, VIX), balance-sheet quality (ROE, debt-to-equity) and risk
+              (beta) — each normalized to 0–100.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {[
@@ -269,13 +290,24 @@ function Terminal() {
                   </span>
                 </div>
               </>
-            ) : (
+            ) : dataState === "loading" ? (
               <div className="mt-4 h-32 animate-pulse rounded-sm bg-surface-2" />
+            ) : (
+              <div className="mt-4 border border-dashed border-border bg-background/60 p-4 text-sm text-muted-foreground">
+                {dataState === "offline"
+                  ? "Top target unavailable because the ranking feed is offline."
+                  : "No top target is available in the current snapshot."}
+              </div>
             )}
           </div>
         </section>
 
-        <details className="mil-panel"><summary className="cursor-pointer p-3 text-xs font-bold uppercase text-primary">Field reference library · weather and defense</summary><IntelSection /></details>
+        <details className="mil-panel">
+          <summary className="cursor-pointer p-3 text-xs font-bold uppercase text-primary">
+            Field reference library · weather and defense
+          </summary>
+          <IntelSection />
+        </details>
 
         {data && <FearPanel fear={data.fear} assetCount={data.assets.length} />}
 
@@ -290,9 +322,9 @@ function Terminal() {
         )}
 
         <footer className="border-t border-border pt-4 text-[11px] leading-relaxed text-muted-foreground">
-          BTD Commando · Sniper board — data from CoinGecko, Yahoo Finance and alternative.me. Scores are
-          quantitative research signals and never a guarantee of future returns. Not investment
-          advice.
+          BTD Commando · Sniper board — data from CoinGecko, Yahoo Finance and alternative.me.
+          Scores are quantitative research signals and never a guarantee of future returns. Not
+          investment advice.
         </footer>
       </div>
     </main>
