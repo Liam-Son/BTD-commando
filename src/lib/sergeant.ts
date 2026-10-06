@@ -5,6 +5,12 @@ export const SERGEANT_LEGACY_STORAGE_KEY = "btd.sergeant.v1" as const;
 export const SERGEANT_SCHEMA_VERSION = 2 as const;
 export const UNIT_BOOK = 100;
 export const MAX_LOG_ROWS = 500;
+/** Fresh-book safety default, separate from the frozen policy and stored-book limits. */
+export const FRESH_BOOK_MAX_SLEEVE_PCT = 20;
+
+export function startingPaperSleevePct(policySleeve: number, configuredCapPct: number): number {
+  return Math.min(clampSleeve(policySleeve) * 100, FRESH_BOOK_MAX_SLEEVE_PCT, Math.max(0, configuredCapPct));
+}
 
 export type Flag = "ACQUIRE" | "WATCH" | "REDUCE" | "STAND DOWN";
 export type FeedState = "live" | "snapshot" | "degraded" | "down";
@@ -190,7 +196,7 @@ export function defaultBook(now = new Date().toISOString()): SergeantBook {
     realizedPnl: 0,
     positions: [],
     log: [],
-    kills: { ...SERGEANT_DEFAULTS.kills },
+    kills: { ...SERGEANT_DEFAULTS.kills, maxSleevePct: FRESH_BOOK_MAX_SLEEVE_PCT },
     updatedAt: now,
   };
 }

@@ -21,6 +21,7 @@ import {
   rebalancePaperPosition,
   saveSergeantBook,
   sleeveFromFlag,
+  startingPaperSleevePct,
   withMarkedPrices,
   type FeedState,
   type Flag,
@@ -109,10 +110,10 @@ function SergeantPage() {
   const suggestedSleeve = flag ? sleeveFromFlag(flag) : 0;
 
   useEffect(() => {
-    setOverridePct(suggestedSleeve * 100);
+    setOverridePct(startingPaperSleevePct(suggestedSleeve, book.kills.maxSleevePct));
     setReason("");
     setNotice("");
-  }, [selected?.symbol, suggestedSleeve]);
+  }, [selected?.symbol, suggestedSleeve, book.kills.maxSleevePct]);
 
   const marked = useMemo(() => markBook(book, prices), [book, prices]);
   const kills = useMemo(() => evaluateKills(book, marked.metrics), [book, marked.metrics]);
@@ -329,7 +330,7 @@ function SergeantPage() {
                     <p className="mt-1 font-mono text-lg font-bold">{flag}</p>
                   </div>
                   <div className="rounded border border-border bg-background p-3">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Suggested sleeve</p>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Raw policy sleeve · not a size recommendation</p>
                     <p className="mt-1 text-lg font-bold">{pct(suggestedSleeve)}</p>
                   </div>
                   <div className="rounded border border-border bg-background p-3">
@@ -340,8 +341,15 @@ function SergeantPage() {
 
                 {acquireFrozen && (
                   <div className="mt-3 rounded border border-down/40 bg-down/10 px-3 py-2 text-[12px] text-down">
-                    ACQUIRE suggestion frozen by current kill rules. Reductions remain available.
+                    The raw ACQUIRE policy sleeve exceeds a current limit or is frozen by a kill rule. A smaller paper size may be allowed by the controls below; reductions remain available.
                   </div>
+                )}
+
+                <p className="mt-3 border border-warn/40 bg-warn/10 px-3 py-2 text-[12px] text-warn">
+                  Starting paper size: at most 20% per name, or your lower configured cap. New books start with a 20% cap; existing books and positions are unchanged. The frozen policy reference is not a position-size recommendation. A different applied size requires your own reason.
+                </p>
+                {book.kills.maxSleevePct > 20 && (
+                  <p className="mt-2 text-[12px] text-warn">Your saved book allows up to {book.kills.maxSleevePct}% per name. Review concentration before increasing exposure; limits are never loosened automatically.</p>
                 )}
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-[160px_1fr]">
@@ -378,6 +386,7 @@ function SergeantPage() {
                 <button
                   type="button"
                   onClick={applyPaperPosture}
+                  disabled={!hydrated || hardIncreaseBlocked || newNameBlocked || sleeveBlocked || (Math.abs(appliedSleeve - suggestedSleeve) > 1e-9 && !reason.trim())}
                   className="mt-4 inline-flex rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
                   Apply + log paper posture

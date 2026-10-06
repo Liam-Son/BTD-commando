@@ -57,7 +57,7 @@ export function BacktestChart() {
             Historical proxy backtest
           </p>
           <h2 className="mt-1 text-3xl font-bold tracking-tight">Historical proxy backtest · Growth of 100</h2>
-          <p className="mt-3 max-w-2xl border border-warn/40 bg-warn/10 p-3 text-xs text-warn">Research simulation, not the full live btd_v1_0 formula: historical PIT fundamentals are unavailable. Uses reweighted drawdown, RSI, VIX and volatility proxies. Not live or audited returns.</p>
+          <p className="mt-3 max-w-2xl border border-warn/40 bg-warn/10 p-3 text-xs text-warn">Validation status: the live btd_v1_0 edge is not established by this proxy. This illustrative simulation uses price-derived substitutes, not historical point-in-time fundamentals. It is not investable, audited, or live performance.</p>
           <p className="mt-2 max-w-lg text-[11px] leading-relaxed text-muted-foreground">
             Equal-weight entry when an asset&apos;s BTD score crosses {BUY_THRESHOLD}, exit when it
             falls below {SELL_THRESHOLD}. Weekly rebalance; uninvested capital is
@@ -84,6 +84,14 @@ export function BacktestChart() {
         <div className="m-4 h-72 animate-pulse rounded-sm bg-surface-2" />
       ) : (
         <>
+          <div className="mx-4 mt-4 border border-warn/40 bg-warn/10 p-3 text-xs text-warn">
+            <p className="font-semibold">
+              {data.stats.btdTotal < data.stats.benchTotal
+                ? `Proxy lagged the price-only benchmark by ${(data.stats.benchTotal - data.stats.btdTotal).toFixed(1)} percentage points in this sample.`
+                : "A favorable proxy result would still not validate the full live scoring formula."}
+            </p>
+            <p className="mt-1 leading-relaxed">Fixed current-stock universe; changing five-year price window; same-close signal execution; no fees, slippage, spreads, taxes or dividends. Drawdown is measured from monthly samples and can miss deeper intramonth losses. Do not use this chart as evidence of a proven trading edge.</p>
+          </div>
           <div className="h-96 px-4 py-6">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={growth} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
@@ -144,19 +152,19 @@ export function BacktestChart() {
 
           <div className="grid grid-cols-2 gap-px border-t border-border bg-border sm:grid-cols-4 lg:grid-cols-6">
             <Stat
-              label="BTD total P&L"
+              label="Proxy price return"
               value={`${data.stats.btdTotal >= 0 ? "+" : ""}${data.stats.btdTotal.toFixed(1)}%`}
               tone={data.stats.btdTotal >= 0 ? "up" : "down"}
             />
             <Stat
-              label="S&P 500 total"
+              label="S&P 500 price return"
               value={`${data.stats.benchTotal >= 0 ? "+" : ""}${data.stats.benchTotal.toFixed(1)}%`}
               tone={data.stats.benchTotal >= 0 ? "up" : "down"}
             />
             <Stat label="Proxy CAGR" value={`${data.stats.btdCagr.toFixed(1)}%`} />
             <Stat label="S&P 500 CAGR" value={`${data.stats.benchCagr.toFixed(1)}%`} />
             <Stat
-              label="Max drawdown"
+              label="Monthly-sampled drawdown"
               value={`${data.stats.btdMaxDrawdown.toFixed(1)}% vs ${data.stats.benchMaxDrawdown.toFixed(1)}%`}
             />
             <Stat

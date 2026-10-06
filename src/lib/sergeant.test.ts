@@ -14,10 +14,16 @@ import {
   rebalancePaperPosition,
   saveSergeantBook,
   sleeveFromFlag,
+  startingPaperSleevePct,
   type SergeantBook,
 } from "./sergeant";
 
 const t0 = "2026-09-30T00:00:00.000Z";
+
+function legacyBook(now = t0): SergeantBook {
+  const book = defaultBook(now);
+  return { ...book, kills: { ...book.kills, maxSleevePct: 100 } };
+}
 
 function paper(book: SergeantBook, overrides: Partial<Parameters<typeof rebalancePaperPosition>[1]> = {}) {
   return rebalancePaperPosition(book, {
@@ -52,21 +58,21 @@ describe("Sergeant policy v1", () => {
   });
 
   it("rejects a mismatched flag or suggested sleeve", () => {
-    const book = defaultBook(t0);
+    const book = legacyBook(t0);
     expect(paper(book, { flag: "WATCH" }).ok).toBe(false);
     expect(paper(book, { suggestedSleeve: 0.5 }).ok).toBe(false);
   });
 
   it("requires a reason for a sleeve override", () => {
-    const result = paper(defaultBook(t0), { appliedSleeve: 0.5, reason: "" });
+    const result = paper(legacyBook(t0), { appliedSleeve: 0.5, reason: "" });
     expect(result.ok).toBe(false);
   });
 
   it("blocks increases on feed DOWN but still allows reductions", () => {
-    const blocked = paper(defaultBook(t0), { feedState: "down" });
+    const blocked = paper(legacyBook(t0), { feedState: "down" });
     expect(blocked.ok).toBe(false);
 
-    const opened = paper(defaultBook(t0));
+    const opened = paper(legacyBook(t0));
     expect(opened.ok).toBe(true);
     if (opened.ok === false) return;
     const reduced = paper(opened.book, {
@@ -80,7 +86,7 @@ describe("Sergeant policy v1", () => {
   });
 
   it("global halt blocks increases but allows a close", () => {
-    const opened = paper(defaultBook(t0));
+    const opened = paper(legacyBook(t0));
     expect(opened.ok).toBe(true);
     if (opened.ok === false) return;
     const halted = changeKillConfig(opened.book, { ...opened.book.kills, globalHalt: true }, "");
@@ -100,7 +106,7 @@ describe("Sergeant policy v1", () => {
   });
 
   it("drawdown kill trips at the configured threshold", () => {
-    const opened = paper(defaultBook(t0));
+    const opened = paper(legacyBook(t0));
     expect(opened.ok).toBe(true);
     if (opened.ok === false) return;
     const marked = markBook(opened.book, { SPY: 89 });
@@ -110,7 +116,7 @@ describe("Sergeant policy v1", () => {
   });
 
   it("detects concentration from actual marked exposure, not just the stored target", () => {
-    const opened = paper(defaultBook(t0), { appliedSleeve: 0.5, reason: "half sleeve" });
+    const opened = paper(legacyBook(t0), { appliedSleeve: 0.5, reason: "half sleeve" });
     expect(opened.ok).toBe(true);
     if (opened.ok === false) return;
     const tightened = changeKillConfig(opened.book, { ...opened.book.kills, maxSleevePct: 55 }, "");
@@ -123,7 +129,7 @@ describe("Sergeant policy v1", () => {
   });
 
   it("allows a reduction even when the new target is still above a tightened sleeve cap", () => {
-    const opened = paper(defaultBook(t0));
+    const opened = paper(legacyBook(t0));
     expect(opened.ok).toBe(true);
     if (opened.ok === false) return;
     const tightened = changeKillConfig(opened.book, { ...opened.book.kills, maxSleevePct: 50 }, "tighten concentration");
@@ -139,7 +145,7 @@ describe("Sergeant policy v1", () => {
   });
 
   it("requires a reason to loosen risk controls and logs accepted changes", () => {
-    const book = defaultBook(t0);
+    const book = legacyBook(t0);
     expect(isRiskLoosening(book.kills, { ...book.kills, maxDrawdownPct: 20 })).toBe(true);
     const rejected = changeKillConfig(book, { ...book.kills, maxDrawdownPct: 20 }, "");
     expect(rejected.ok).toBe(false);
@@ -152,7 +158,7 @@ describe("Sergeant policy v1", () => {
   });
 
   it("records realized P/L when reducing or closing", () => {
-    const opened = paper(defaultBook(t0));
+    const opened = paper(legacyBook(t0));
     expect(opened.ok).toBe(true);
     if (opened.ok === false) return;
     const closed = paper(opened.book, {
@@ -197,11 +203,11 @@ describe("Sergeant policy v1", () => {
     expect(loaded.book.cash).toBe(100);
 
     const badWrite = { setItem() { throw new Error("quota"); } };
-    expect(saveSergeantBook(badWrite, defaultBook(t0)).ok).toBe(false);
+    expect(saveSergeantBook(badWrite, legacyBook(t0)).ok).toBe(false);
   });
 
   it("exports paper and kill events to CSV", () => {
-    const opened = paper(defaultBook(t0));
+    const opened = paper(legacyBook(t0));
     expect(opened.ok).toBe(true);
     if (opened.ok === false) return;
     const halted = changeKillConfig(opened.book, { ...opened.book.kills, globalHalt: true }, "");
@@ -216,7 +222,30 @@ describe("Sergeant policy v1", () => {
   it("writes the current schema key", () => {
     let writtenKey = "";
     const storage = { setItem(key: string) { writtenKey = key; } };
-    expect(saveSergeantBook(storage, defaultBook(t0)).ok).toBe(true);
+    expect(saveSergeantBook(storage, legacyBook(t0)).ok).toBe(true);
     expect(writtenKey).toBe(SERGEANT_STORAGE_KEY);
+  });
+});
+
+
+describe("Fresh-book safety defaults", () => {
+  it("uses a separate 20% cap without changing the frozen policy", () => {
+    expect(defaultBook(t0).kills.maxSleevePct).toBe(20);
+    expect(sleeveFromFlag("ACQUIRE")).toBe(1);
+    expect(startingPaperSleevePct(1, 100)).toBe(20);
+    expect(startingPaperSleevePct(1, 5)).toBe(5);
+    expect(startingPaperSleevePct(0.1, 20)).toBe(10);
+  });
+  it("blocks full concentration and requires an explicit reason for the smaller applied size", () => {
+    expect(paper(defaultBook(t0)).ok).toBe(false);
+    expect(paper(defaultBook(t0), { appliedSleeve: 0.2 }).ok).toBe(false);
+    expect(paper(defaultBook(t0), { appliedSleeve: 0.2, reason: "concentration-limited paper practice" }).ok).toBe(true);
+    expect(changeKillConfig(defaultBook(t0), { ...defaultBook(t0).kills, maxSleevePct: 100 }, "").ok).toBe(false);
+  });
+  it("preserves the explicit cap in a stored legacy-compatible book", () => {
+    const book = legacyBook(t0);
+    const loaded = loadSergeantBook({ getItem(key) { return key === SERGEANT_STORAGE_KEY ? JSON.stringify(book) : null; } }, t0);
+    expect(loaded.status).toBe("loaded");
+    expect(loaded.book.kills.maxSleevePct).toBe(100);
   });
 });
