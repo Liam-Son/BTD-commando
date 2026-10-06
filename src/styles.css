@@ -123,11 +123,11 @@
 
 @utility mil-tab {
   font-family: var(--font-pixel);
-  font-size: 1.1rem;
-  letter-spacing: 0.1em;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   border: 2px solid transparent;
-  padding: 0.35rem 0.75rem;
+  padding: 0.35rem 0.5rem;
   line-height: 1;
 }
 
@@ -238,6 +238,10 @@
   background:
     radial-gradient(ellipse 70% 50% at 30% 60%, oklch(0.4 0.08 70 / 0.35), transparent 50%),
     linear-gradient(160deg, oklch(0.18 0.03 145), oklch(0.22 0.05 95 / 0.4) 40%, oklch(0.14 0.02 145));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track, .row-enter, .live-dot { animation: none; }
 }
 
 .ops-sky-strip {

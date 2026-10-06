@@ -9,6 +9,7 @@ type Props = {
     | "sergeant"
     | "ranger"
     | "hunter"
+    | "arcade"
     | "communication"
     | "intel"
     | "medic"
@@ -28,6 +29,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
     return (
       <Link
         to={to}
+        aria-current={on ? "page" : undefined}
         className={
           on
             ? "mil-tab mil-tab-active inline-flex items-center gap-1.5"
@@ -46,7 +48,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <PixelIcon name={ICONS.aim} className="pixel h-8 w-8 shrink-0" />
           <div className="min-w-0">
-            <h1 className="pixel-title text-xl leading-none text-primary sm:text-2xl">
+            <h1 className="pixel-title text-xl leading-none text-primary">
               BTD COMMANDO
             </h1>
             <p className="hidden text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:block">
@@ -54,7 +56,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
             </p>
           </div>
         </Link>
-        <nav className="flex flex-wrap items-center gap-1 border border-border bg-surface px-1 py-0.5">
+        <nav aria-label="Main navigation" className="flex flex-wrap items-center gap-0.5 border border-border bg-surface px-1 py-0.5">
           <span
             className="flex items-center gap-1 border-r border-border px-1.5 py-0.5 text-primary"
             title="WAYFINDER navigation companion"
@@ -76,6 +78,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
           {tab("ranger", "/ranger", "Ranger", ICONS.idle)}
           {tab("hunter", "/hunter", "Hunter", ICONS.radar)}
           {tab("medic", "/medic", "Medic", ICONS.medkit)}
+          {tab("arcade", "/arcade", "Arcade", ICONS.supply)}
           <details className="relative"><summary className="mil-tab cursor-pointer text-primary">Tools</summary><div className="absolute right-0 top-full z-50 flex min-w-44 flex-col gap-1 border-2 border-primary/40 bg-background p-2 shadow-xl"><Link to="/data-tools" className="mil-tab">Data tools</Link>{tab("communication", "/communication", "Communication", ICONS.signal)}{tab("armory", "/armory", "Armory", ICONS.supply)}{tab("ops", "/ops", "Ops Log", ICONS.opsLog)}{tab("stocks", "/stocks", "Stocks", ICONS.score)}{tab("crypto", "/crypto", "Crypto", ICONS.signal)}</div></details>
           <span className="mx-0.5 hidden h-4 w-px bg-border sm:inline" />
           <Link
