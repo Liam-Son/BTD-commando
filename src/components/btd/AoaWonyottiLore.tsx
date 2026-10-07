@@ -1,12 +1,15 @@
 import { AOA_WONYOTTI_LORE as L } from "@/lib/aoa-wonyotti-lore";
 
-/** Public third-party AOA/워뇨띠 lore. Not live Hunter signal, not BTD alpha. */
+/** Public AOA/Wonyotti lore. Wallet-verified where noted. Not live Hunter signal. */
 export function AoaWonyottiLore() {
+  const r = L.rebuild;
   return (
     <section className="mil-panel p-5" aria-label="AOA Wonyotti research lore">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[.25em] text-muted-foreground">Named-trader archive · education</p>
+          <p className="text-[10px] font-bold uppercase tracking-[.25em] text-muted-foreground">
+            Named-trader archive · education
+          </p>
           <h2 className="mt-1 text-base font-extrabold uppercase tracking-wide text-foreground">{L.title}</h2>
         </div>
         <span className="border border-border bg-surface-2 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -15,7 +18,7 @@ export function AoaWonyottiLore() {
       </div>
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{L.headline}</p>
       <p className="mt-2 text-xs text-muted-foreground">
-        Window {L.window.from} → {L.window.to}. Venue note: {L.venue}. Separate from confirmed-block recon and from rejected K-Whale research above.
+        Window {L.window.from} → {L.window.to}. {L.venue}. {L.packNote} Separate from block recon and rejected K-Whale research.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 text-xs">
         {L.metrics.map((m) => (
@@ -24,6 +27,13 @@ export function AoaWonyottiLore() {
             <p className="tabular font-semibold text-foreground">{m.value}</p>
           </div>
         ))}
+      </div>
+      <div className="mt-4 border border-border/70 bg-background/30 p-3 text-xs leading-relaxed text-muted-foreground">
+        <p className="font-semibold text-foreground">{r.label}</p>
+        <p className="mt-1 tabular">
+          Closed RTs {r.closedRts} (blog {r.blogRts}) · WR {r.winRate} (blog {r.blogWinRate})
+        </p>
+        <p className="mt-1">{r.note}</p>
       </div>
       <h3 className="mt-5 text-sm font-bold uppercase tracking-wide text-foreground">Three principles (analyst frame)</h3>
       <ol className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
@@ -44,7 +54,7 @@ export function AoaWonyottiLore() {
       </ul>
       <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">{L.disclaimer}</p>
       <a href={L.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-xs text-primary underline">
-        Source: {L.sourceLabel} ↗
+        Source write-up: {L.sourceLabel} ↗
       </a>
     </section>
   );
