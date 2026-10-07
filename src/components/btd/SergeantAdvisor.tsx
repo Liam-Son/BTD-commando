@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 type Rank = "CORPORAL" | "SERGEANT";
 type Status = { rank: Rank; advancedAvailable: boolean; sergeantState: string; mode: string };
 type Line = { role: "user" | "assistant"; content: string; rank?: Rank; status?: string };
-const starters = ["What is the BTD score?", "Explain paper-only risk", "What is diversification?"];
+const starters = ["What is the BTD score?", "How do kill switches work?", "What is look-ahead bias?", "How does the paper book work?"];
 
 export function SergeantAdvisor() {
   const [status, setStatus] = useState<Status>({
