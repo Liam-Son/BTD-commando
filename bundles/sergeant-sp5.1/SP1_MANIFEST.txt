@@ -1,0 +1,8 @@
+SERGEANT SAVEPOINT SP1 CANDIDATE
+Baseline: Liam-Son/BTD-commando main @ c0c0a9799770a4f33440193379c833608c351b61
+Files added:
+  src/lib/sergeant-risk.ts
+  src/lib/sergeant-risk.test.ts
+  docs/SERGEANT_SP1.md
+No existing production file is modified by this candidate.
+GitHub branch write: BLOCKED by connector 403 as of 2026-10-07.

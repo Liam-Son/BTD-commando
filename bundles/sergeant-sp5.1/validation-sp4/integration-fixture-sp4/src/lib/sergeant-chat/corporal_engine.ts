@@ -1,0 +1,27 @@
+// Corporal V6 — always-on deterministic first-line assistant for Noviark.
+// Runs in the normal website/serverless layer with no local model dependency.
+// Scope: basic finance/site help, paper-desk explanations, safe refusals, and escalation to Sergeant.
+// Voice: calm field sergeant. No live orders. Score is not an order.
+
+import { contextualSergeantDeskReply, type SergeantDeskContext } from "./desk_context";
+
+export type CorporalReply = any; export type CorporalStatus=any;
+const INJECTION:any[]=[]; const FAKE_EXECUTION:any[]=[]; const PERSONALIZED:any[]=[]; const ACTION:any[]=[]; const META_OR_NEGATION:any[]=[]; const ACTION_FOLLOWUP:any[]=[]; const LIVE_OR_ADVANCED:any[]=[];
+function matchesAny(xs:any[],q:string){return false} function base(...x:any[]):any{return x}
+export function corporalReply(message: string, context?: SergeantDeskContext | null): CorporalReply {
+ const q=message;
+  if (matchesAny(INJECTION, q)) return base();
+  if (matchesAny(FAKE_EXECUTION, q)) return base();
+  if (matchesAny(PERSONALIZED, q)) return base();
+  const meta = matchesAny(META_OR_NEGATION, q) && !matchesAny(ACTION_FOLLOWUP, q);
+  const deskReply = contextualSergeantDeskReply(q, context);
+  if (deskReply) {
+    return base('BASIC_INFO', deskReply.message, 'deterministic_desk_context', false, false, deskReply.topic);
+  }
+  if (!meta && matchesAny(ACTION, q)) {
+    return base('SERGEANT_REQUIRED', 'Hold. That needs the full paper engine or the desk controls. Corporal will not change portfolio state from chat.', 'advanced_action', true, true, 'portfolio_action');
+  }
+
+  if (matchesAny(LIVE_OR_ADVANCED, q)) return base();
+ return base();
+}

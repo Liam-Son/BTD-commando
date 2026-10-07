@@ -1,0 +1,743 @@
+--- /dev/null	2026-10-07 02:24:36.346428321 +0000
++++ /mnt/data/sergeant-sp3-savepoint/src/lib/sergeant-chat/desk_context.ts	2026-10-07 02:54:38.722790726 +0000
+@@ -0,0 +1,342 @@
++import type { BookMetrics, FeedState, Flag, KillState, SergeantBook } from "../sergeant";
++import type { SergeantRiskBrief } from "../sergeant-risk";
++
++export const SERGEANT_DESK_CONTEXT_ID = "sergeant_desk_context_v1" as const;
++export const SERGEANT_DESK_CONTEXT_SOURCE = "client_reported_paper_snapshot" as const;
++
++export interface SergeantDeskSelection {
++  symbol: string;
++  btdScore: number;
++  confidence: number;
++  flag: Flag;
++  currentSleevePct: number;
++  requestedSleevePct: number;
++}
++
++export interface SergeantDeskStress {
++  id: string;
++  label: string;
++  estimatedEquity: number;
++  estimatedLossPct: number;
++}
++
++export interface SergeantDeskContext {
++  contextId: typeof SERGEANT_DESK_CONTEXT_ID;
++  source: typeof SERGEANT_DESK_CONTEXT_SOURCE;
++  generatedAt: string;
++  formulaId: "btd_v1_0";
++  policyId: "sergeant_policy_v1";
++  selected: SergeantDeskSelection | null;
++  book: {
++    equity: number;
++    drawdownPct: number;
++    grossExposurePct: number;
++    activeNames: number;
++    maxSingleSleevePct: number;
++    realizedPnl: number;
++    unrealizedPnl: number;
++  };
++  kills: {
++    any: boolean;
++    globalHalt: boolean;
++    reasons: string[];
++  };
++  risk: {
++    engineId: "sergeant_risk_v1";
++    posture: SergeantRiskBrief["posture"];
++    bookHealth: number;
++    paperRiskCeilingPct: number;
++    inputReliability: number;
++    reliabilityKnown: boolean;
++    feedState: FeedState;
++    reasons: string[];
++    stress: SergeantDeskStress[];
++  };
++}
++
++export interface BuildSergeantDeskContextInput {
++  book: SergeantBook;
++  metrics: BookMetrics;
++  kills: KillState;
++  risk: SergeantRiskBrief;
++  selected?: {
++    symbol: string;
++    btdScore: number;
++    confidence: number;
++    flag: Flag;
++    currentSleevePct: number;
++    requestedSleevePct: number;
++  } | null;
++  generatedAt?: string;
++}
++
++const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
++const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
++const pct = (value: number) => clamp(value, 0, 100);
++const rounded = (value: number, digits = 2) => {
++  const p = 10 ** digits;
++  return Math.round((value + Number.EPSILON) * p) / p;
++};
++const text = (value: unknown, max = 240) => typeof value === "string" ? value.trim().slice(0, max) : "";
++
++function validFlag(value: unknown): value is Flag {
++  return value === "ACQUIRE" || value === "WATCH" || value === "REDUCE" || value === "STAND DOWN";
++}
++
++function validFeedState(value: unknown): value is FeedState {
++  return value === "live" || value === "snapshot" || value === "degraded" || value === "down";
++}
++
++function validPosture(value: unknown): value is SergeantRiskBrief["posture"] {
++  return value === "CLEAR" || value === "CAUTION" || value === "REDUCE" || value === "NO INCREASE";
++}
++
++function isoOrNow(value: unknown): string {
++  if (typeof value === "string") {
++    const ms = Date.parse(value);
++    if (Number.isFinite(ms)) return new Date(ms).toISOString();
++  }
++  return new Date().toISOString();
++}
++
++export function buildSergeantDeskContext(input: BuildSergeantDeskContextInput): SergeantDeskContext {
++  const selected = input.selected
++    ? {
++        symbol: input.selected.symbol.trim().toUpperCase().slice(0, 16),
++        btdScore: rounded(pct(input.selected.btdScore), 1),
++        confidence: rounded(pct(input.selected.confidence), 1),
++        flag: input.selected.flag,
++        currentSleevePct: rounded(pct(input.selected.currentSleevePct), 1),
++        requestedSleevePct: rounded(pct(input.selected.requestedSleevePct), 1),
++      }
++    : null;
++
++  return {
++    contextId: SERGEANT_DESK_CONTEXT_ID,
++    source: SERGEANT_DESK_CONTEXT_SOURCE,
++    generatedAt: isoOrNow(input.generatedAt),
++    formulaId: "btd_v1_0",
++    policyId: "sergeant_policy_v1",
++    selected,
++    book: {
++      equity: rounded(Math.max(0, input.metrics.equity), 3),
++      drawdownPct: rounded(pct(input.metrics.drawdownPct), 2),
++      grossExposurePct: rounded(pct(input.metrics.grossExposure * 100), 2),
++      activeNames: Math.max(0, Math.min(100, Math.round(input.metrics.activeNames))),
++      maxSingleSleevePct: rounded(pct(input.metrics.maxSingleSleevePct), 2),
++      realizedPnl: rounded(input.metrics.realizedPnl, 3),
++      unrealizedPnl: rounded(input.metrics.unrealizedPnl, 3),
++    },
++    kills: {
++      any: input.kills.any,
++      globalHalt: input.kills.globalHalt,
++      reasons: input.kills.reasons.slice(0, 8).map((reason) => reason.slice(0, 240)),
++    },
++    risk: {
++      engineId: "sergeant_risk_v1",
++      posture: input.risk.posture,
++      bookHealth: rounded(pct(input.risk.bookHealth), 1),
++      paperRiskCeilingPct: rounded(pct(input.risk.paperRiskCeilingPct), 1),
++      inputReliability: rounded(pct(input.risk.inputReliability), 1),
++      reliabilityKnown: input.risk.reliabilityKnown,
++      feedState: input.risk.feedState,
++      reasons: input.risk.reasons.slice(0, 8).map((reason) => reason.slice(0, 240)),
++      stress: input.risk.stress.slice(0, 4).map((scenario) => ({
++        id: scenario.id,
++        label: scenario.label.slice(0, 120),
++        estimatedEquity: rounded(Math.max(0, scenario.estimatedEquity), 3),
++        estimatedLossPct: rounded(pct(scenario.estimatedLossPct), 2),
++      })),
++    },
++  };
++}
++
++function record(value: unknown): value is Record<string, unknown> {
++  return !!value && typeof value === "object" && !Array.isArray(value);
++}
++
++function boundedNumber(value: unknown, low: number, high: number): number | null {
++  if (!finite(value)) return null;
++  return clamp(value, low, high);
++}
++
++function safeReasons(value: unknown): string[] {
++  if (!Array.isArray(value)) return [];
++  return value.map((item) => text(item)).filter(Boolean).slice(0, 8);
++}
++
++export function sanitizeSergeantDeskContext(value: unknown): SergeantDeskContext | null {
++  if (!record(value)) return null;
++  if (value["contextId"] !== SERGEANT_DESK_CONTEXT_ID) return null;
++  if (value["source"] !== SERGEANT_DESK_CONTEXT_SOURCE) return null;
++  if (value["formulaId"] !== "btd_v1_0" || value["policyId"] !== "sergeant_policy_v1") return null;
++
++  const book = value["book"];
++  const kills = value["kills"];
++  const risk = value["risk"];
++  if (!record(book) || !record(kills) || !record(risk)) return null;
++
++  const equity = boundedNumber(book["equity"], 0, 1e9);
++  const drawdownPct = boundedNumber(book["drawdownPct"], 0, 100);
++  const grossExposurePct = boundedNumber(book["grossExposurePct"], 0, 100);
++  const activeNames = boundedNumber(book["activeNames"], 0, 100);
++  const maxSingleSleevePct = boundedNumber(book["maxSingleSleevePct"], 0, 100);
++  const realizedPnl = boundedNumber(book["realizedPnl"], -1e9, 1e9);
++  const unrealizedPnl = boundedNumber(book["unrealizedPnl"], -1e9, 1e9);
++  const bookHealth = boundedNumber(risk["bookHealth"], 0, 100);
++  const paperRiskCeilingPct = boundedNumber(risk["paperRiskCeilingPct"], 0, 100);
++  const inputReliability = boundedNumber(risk["inputReliability"], 0, 100);
++  const posture = risk["posture"];
++  const feedState = risk["feedState"];
++  if ([equity, drawdownPct, grossExposurePct, activeNames, maxSingleSleevePct, realizedPnl, unrealizedPnl, bookHealth, paperRiskCeilingPct, inputReliability].some((x) => x === null)) return null;
++  if (!validPosture(posture) || !validFeedState(feedState)) return null;
++  if (risk["engineId"] !== "sergeant_risk_v1") return null;
++  if (typeof kills["any"] !== "boolean" || typeof kills["globalHalt"] !== "boolean" || typeof risk["reliabilityKnown"] !== "boolean") return null;
++
++  let selected: SergeantDeskSelection | null = null;
++  if (value["selected"] !== null && value["selected"] !== undefined) {
++    const raw = value["selected"];
++    if (!record(raw)) return null;
++    const symbol = text(raw["symbol"], 16).toUpperCase();
++    const btdScore = boundedNumber(raw["btdScore"], 0, 100);
++    const confidence = boundedNumber(raw["confidence"], 0, 100);
++    const currentSleevePct = boundedNumber(raw["currentSleevePct"], 0, 100);
++    const requestedSleevePct = boundedNumber(raw["requestedSleevePct"], 0, 100);
++    if (!symbol || !/^[A-Z0-9][A-Z0-9._-]{0,15}$/.test(symbol) || btdScore === null || confidence === null || currentSleevePct === null || requestedSleevePct === null || !validFlag(raw["flag"])) return null;
++    selected = { symbol, btdScore, confidence, currentSleevePct, requestedSleevePct, flag: raw["flag"] };
++  }
++
++  const rawStress = Array.isArray(risk["stress"]) ? risk["stress"] : [];
++  const stress: SergeantDeskStress[] = [];
++  for (const item of rawStress.slice(0, 4)) {
++    if (!record(item)) continue;
++    const id = text(item["id"], 80);
++    const label = text(item["label"], 120);
++    const estimatedEquity = boundedNumber(item["estimatedEquity"], 0, 1e9);
++    const estimatedLossPct = boundedNumber(item["estimatedLossPct"], 0, 100);
++    if (id && label && estimatedEquity !== null && estimatedLossPct !== null) {
++      stress.push({ id, label, estimatedEquity, estimatedLossPct });
++    }
++  }
++
++  return {
++    contextId: SERGEANT_DESK_CONTEXT_ID,
++    source: SERGEANT_DESK_CONTEXT_SOURCE,
++    generatedAt: isoOrNow(value["generatedAt"]),
++    formulaId: "btd_v1_0",
++    policyId: "sergeant_policy_v1",
++    selected,
++    book: {
++      equity: equity!, drawdownPct: drawdownPct!, grossExposurePct: grossExposurePct!,
++      activeNames: Math.round(activeNames!), maxSingleSleevePct: maxSingleSleevePct!,
++      realizedPnl: realizedPnl!, unrealizedPnl: unrealizedPnl!,
++    },
++    kills: {
++      any: kills["any"],
++      globalHalt: kills["globalHalt"],
++      reasons: safeReasons(kills["reasons"]),
++    },
++    risk: {
++      engineId: "sergeant_risk_v1",
++      posture,
++      bookHealth: bookHealth!,
++      paperRiskCeilingPct: paperRiskCeilingPct!,
++      inputReliability: inputReliability!,
++      reliabilityKnown: risk["reliabilityKnown"],
++      feedState,
++      reasons: safeReasons(risk["reasons"]),
++      stress,
++    },
++  };
++}
++
++export interface ContextualDeskReply {
++  topic: string;
++  message: string;
++}
++
++function snapshotPrefix(context: SergeantDeskContext): string {
++  return `Desk snapshot (${context.risk.feedState.toUpperCase()}, paper-only):`;
++}
++
++function selectedLine(context: SergeantDeskContext): string {
++  const s = context.selected;
++  if (!s) return "No selected Sniper symbol is attached to this chat snapshot.";
++  return `${s.symbol}: BTD ${s.btdScore.toFixed(1)}, input reliability ${s.confidence.toFixed(0)}/100, paper posture ${s.flag}, current sleeve ${s.currentSleevePct.toFixed(1)}%, typed target ${s.requestedSleevePct.toFixed(1)}%.`;
++}
++
++export function contextualSergeantDeskReply(message: string, context: SergeantDeskContext | null | undefined): ContextualDeskReply | null {
++  if (!context) return null;
++  const q = String(message ?? "").trim();
++  if (!q) return null;
++
++  if (/\b(book health|how(?:'s| is) my (?:paper )?book|paper book status|desk status|risk brief|risk posture)\b/i.test(q)) {
++    return {
++      topic: "desk_health",
++      message: `${snapshotPrefix(context)} health ${context.risk.bookHealth.toFixed(1)}/100, posture ${context.risk.posture}, drawdown ${context.book.drawdownPct.toFixed(2)}%, gross ${context.book.grossExposurePct.toFixed(1)}%, largest sleeve ${context.book.maxSingleSleevePct.toFixed(1)}%, and deterministic new/increase ceiling ${context.risk.paperRiskCeilingPct.toFixed(1)}% per name. ${selectedLine(context)} This is a client-reported local paper snapshot, not broker data or a live-order instruction.`,
++    };
++  }
++
++  if (/\bwhy\b.{0,30}\b(caution|reduce|no increase|posture|risk|ceiling)\b/i.test(q) || /\bwhat.*(?:driving|causing).*posture\b/i.test(q)) {
++    const reasons = context.risk.reasons.length ? context.risk.reasons.join(" ") : "No additional deterministic reason was recorded.";
++    return {
++      topic: "desk_posture_reason",
++      message: `${snapshotPrefix(context)} posture is ${context.risk.posture}. ${reasons} The overlay can tighten new/increased paper exposure, but it does not rewrite the BTD score, force a liquidation, or authorize a live trade.`,
++    };
++  }
++
++  if (/\b(risk ceiling|paper risk ceiling|max(?:imum)? paper|paper capacity|how much.*paper|how much.*increase)\b/i.test(q)) {
++    const selected = context.selected ? ` Current ${context.selected.symbol} paper sleeve is ${context.selected.currentSleevePct.toFixed(1)}%.` : "";
++    return {
++      topic: "desk_ceiling",
++      message: `${snapshotPrefix(context)} deterministic per-name ceiling for any new or increased paper target is ${context.risk.paperRiskCeilingPct.toFixed(1)}%.${selected} It is a safety cap, not a recommended position size. Reductions remain available even when an existing sleeve is already above the ceiling.`,
++    };
++  }
++
++  if (/\b(can i|am i allowed to|could i)\b.{0,35}\b(increase|add|raise)\b/i.test(q)) {
++    const selected = context.selected;
++    const state = context.risk.posture === "NO INCREASE" || context.risk.paperRiskCeilingPct <= 0
++      ? "The current deterministic desk state blocks new or increased paper exposure."
++      : `The desk permits only paper targets at or below the ${context.risk.paperRiskCeilingPct.toFixed(1)}% safety ceiling, subject to the existing kill controls.`;
++    const focus = selected ? ` ${selected.symbol} is currently ${selected.currentSleevePct.toFixed(1)}% in the local paper book.` : "";
++    return {
++      topic: "desk_increase_rule",
++      message: `${snapshotPrefix(context)} ${state}${focus} I can explain the paper rule, but chat does not change the book and this is not a personalized live-market recommendation.`,
++    };
++  }
++
++  const stressRequested = /\b(stress|stress test|scenario|crash|drop|falls?|down)\b/i.test(q);
++  if (stressRequested) {
++    const wanted = /35\s*%/.test(q) ? 35 : /20\s*%/.test(q) ? 20 : /10\s*%/.test(q) ? 10 : null;
++    const scenario = wanted === null
++      ? context.risk.stress.find((row) => row.id === "book_down_20") ?? context.risk.stress[0]
++      : context.risk.stress.find((row) => row.label.includes(`−${wanted}%`));
++    if (scenario) {
++      return {
++        topic: "desk_stress",
++        message: `${snapshotPrefix(context)} ${scenario.label} estimates a ${scenario.estimatedLossPct.toFixed(2)}% paper-book loss and NAV ${scenario.estimatedEquity.toFixed(2)} from the current local snapshot. This is a simple deterministic shock, not a forecast.`,
++      };
++    }
++    return {
++      topic: "desk_stress",
++      message: `${snapshotPrefix(context)} no active paper positions are available for a stress calculation.`,
++    };
++  }
++
++  if (/\b(kill|halt|drawdown limit|name limit|sleeve cap)\b/i.test(q) && /\b(my|current|active|tripped|status)\b/i.test(q)) {
++    const status = context.kills.any ? `TRIPPED: ${context.kills.reasons.join(" ") || "one or more deterministic limits are active."}` : "clear; no deterministic kill is currently tripped.";
++    return {
++      topic: "desk_kills",
++      message: `${snapshotPrefix(context)} kill status is ${status} Global halt is ${context.kills.globalHalt ? "ON" : "OFF"}. Reductions remain available when an increase is blocked.`,
++    };
++  }
++
++  if (/\b(selected|focus|current symbol|current name|this asset|input reliability|confidence)\b/i.test(q)) {
++    return {
++      topic: "desk_selected",
++      message: `${snapshotPrefix(context)} ${selectedLine(context)} The values describe the local paper desk and BTD input reliability, not guaranteed future performance.`,
++    };
++  }
++
++  return null;
++}
+--- /dev/null	2026-10-07 02:24:36.346428321 +0000
++++ /mnt/data/sergeant-sp3-savepoint/src/lib/sergeant-chat/desk_context.test.ts	2026-10-07 02:54:38.725286701 +0000
+@@ -0,0 +1,98 @@
++import { describe, expect, it } from "vitest";
++import { defaultBook, markBook, evaluateKills } from "../sergeant";
++import { assessSergeantRisk } from "../sergeant-risk";
++import {
++  buildSergeantDeskContext,
++  contextualSergeantDeskReply,
++  sanitizeSergeantDeskContext,
++  SERGEANT_DESK_CONTEXT_ID,
++} from "./desk_context";
++
++function context(overrides: { feedState?: "live" | "snapshot" | "degraded" | "down"; confidence?: number } = {}) {
++  const book = defaultBook("2026-10-07T00:00:00.000Z");
++  const marked = markBook(book, {});
++  const kills = evaluateKills(book, marked.metrics);
++  const feedState = overrides.feedState ?? "live";
++  const risk = assessSergeantRisk({
++    book,
++    metrics: marked.metrics,
++    kills,
++    feedState,
++    inputReliability: overrides.confidence ?? 80,
++  });
++  return buildSergeantDeskContext({
++    book,
++    metrics: marked.metrics,
++    kills,
++    risk,
++    selected: {
++      symbol: "SPY",
++      btdScore: 72.3,
++      confidence: overrides.confidence ?? 80,
++      flag: "ACQUIRE",
++      currentSleevePct: 0,
++      requestedSleevePct: 10,
++    },
++    generatedAt: "2026-10-07T00:00:00.000Z",
++  });
++}
++
++describe("Sergeant SP3 desk context", () => {
++  it("builds a versioned paper-only snapshot", () => {
++    const c = context();
++    expect(c.contextId).toBe(SERGEANT_DESK_CONTEXT_ID);
++    expect(c.formulaId).toBe("btd_v1_0");
++    expect(c.policyId).toBe("sergeant_policy_v1");
++    expect(c.selected?.symbol).toBe("SPY");
++  });
++
++  it("sanitizes valid context and rejects incompatible versions", () => {
++    const c = context();
++    expect(sanitizeSergeantDeskContext(c)?.selected?.symbol).toBe("SPY");
++    expect(sanitizeSergeantDeskContext({ ...c, formulaId: "other" })).toBeNull();
++    expect(sanitizeSergeantDeskContext({ ...c, source: "broker" })).toBeNull();
++  });
++
++  it("clamps tampered numeric fields instead of trusting them", () => {
++    const c: any = context();
++    c.book.grossExposurePct = 9999;
++    c.risk.paperRiskCeilingPct = 9999;
++    const safe = sanitizeSergeantDeskContext(c);
++    expect(safe?.book.grossExposurePct).toBe(100);
++    expect(safe?.risk.paperRiskCeilingPct).toBe(100);
++  });
++
++  it("answers book-health questions from deterministic context", () => {
++    const reply = contextualSergeantDeskReply("How is my paper book?", context());
++    expect(reply?.topic).toBe("desk_health");
++    expect(reply?.message).toContain("health");
++    expect(reply?.message).toContain("paper-only");
++  });
++
++  it("explains the risk ceiling without turning it into a recommendation", () => {
++    const reply = contextualSergeantDeskReply("What is my paper risk ceiling?", context());
++    expect(reply?.topic).toBe("desk_ceiling");
++    expect(reply?.message).toContain("safety cap");
++    expect(reply?.message).toContain("not a recommended position size");
++  });
++
++  it("can explain paper increase eligibility but never mutates state", () => {
++    const reply = contextualSergeantDeskReply("Can I increase this position?", context({ feedState: "down" }));
++    expect(reply?.topic).toBe("desk_increase_rule");
++    expect(reply?.message).toContain("blocks new or increased paper exposure");
++    expect(reply?.message).toContain("chat does not change the book");
++  });
++
++  it("reports deterministic stress as a scenario, not a forecast", () => {
++    const c: any = context();
++    c.risk.stress = [{ id: "book_down_20", label: "All paper positions −20%", estimatedEquity: 92, estimatedLossPct: 8 }];
++    const reply = contextualSergeantDeskReply("What happens if the book drops 20%?", c);
++    expect(reply?.topic).toBe("desk_stress");
++    expect(reply?.message).toContain("NAV 92.00");
++    expect(reply?.message).toContain("not a forecast");
++  });
++
++  it("returns null when no deterministic desk context is supplied", () => {
++    expect(contextualSergeantDeskReply("How is my book?", null)).toBeNull();
++  });
++});
+--- /dev/null	2026-10-07 02:24:36.346428321 +0000
++++ /mnt/data/sergeant-sp3-savepoint/docs/SERGEANT_SP3.md	2026-10-07 02:54:38.727841021 +0000
+@@ -0,0 +1,54 @@
++# Sergeant SP3 — Desk-aware chat context
++
++Baseline: SP2 deterministic risk overlay and Risk Brief/Stress Lab.
++
++## Goal
++
++Make Corporal/Sergeant understand the current local **paper** desk without giving chat authority to mutate portfolio state.
++
++## New context contract
++
++`sergeant_desk_context_v1` contains a compact, versioned client-reported paper snapshot:
++
++- frozen formula/policy ids
++- selected Sniper symbol, BTD score, input reliability and paper posture
++- current/typed paper sleeve percentages
++- book equity, drawdown, gross exposure, names, concentration and P/L
++- active kill state
++- SP2 deterministic risk posture, book health and paper-risk ceiling
++- SP2 stress scenarios
++
++The API sanitizes the snapshot before Corporal or optional advanced Sergeant sees it.
++
++## Deterministic Corporal abilities
++
++With a valid desk context, Corporal can answer:
++
++- “How is my paper book?”
++- “Why is the posture CAUTION?”
++- “What is my paper-risk ceiling?”
++- “Can I increase this paper position?”
++- “What happens in a -20% stress scenario?”
++- “Are any kills tripped?”
++- “What symbol is selected?”
++
++These answers describe the current local paper desk. They do **not** change it.
++
++## Trust boundary
++
++The snapshot originates in the browser and is therefore labeled `client_reported_paper_snapshot`.
++It is useful for explanation, not authoritative broker/account state. No broker data, credentials, or live-order permissions are introduced.
++
++## Optional advanced model
++
++If the private Sergeant backend is configured, the sanitized context may be included in the request body with explicit paper-only/no-mutation constraints. The deterministic policy/risk engine remains authoritative for the website desk. The model cannot loosen kills, alter `btd_v1_0`, or mutate the local paper book through chat.
++
++## Invariants
++
++- paper only
++- no broker path
++- no chat portfolio mutation
++- no fake execution claims
++- no personalized live-order recommendation
++- deterministic safety logic remains outside the LLM
++- invalid/tampered context is discarded or bounded before use
+--- /dev/null	2026-10-07 02:24:36.346428321 +0000
++++ /mnt/data/sergeant-sp3-savepoint/integration/apply_sergeant_sp3.py	2026-10-07 02:56:37.414646467 +0000
+@@ -0,0 +1,207 @@
++#!/usr/bin/env python3
++"""Apply Sergeant SP3 desk-aware chat wiring to an SP2-integrated BTD-commando tree.
++
++Safety properties:
++- computes every edit before writing anything
++- refuses if an expected anchor is missing/duplicated
++- refuses if SP3 appears already applied
++- creates .sp3.bak for every modified file before writes
++- does not touch btd_v1_0 scoring, sergeant_policy_v1, paper ledger, or broker code
++"""
++from __future__ import annotations
++
++from pathlib import Path
++import shutil
++import sys
++
++FILES = {
++    "route": Path("src/routes/sergeant.tsx"),
++    "advisor": Path("src/components/btd/SergeantAdvisor.tsx"),
++    "api": Path("src/routes/api.sergeant-chat.ts"),
++    "corporal": Path("src/lib/sergeant-chat/corporal_engine.ts"),
++    "router": Path("src/lib/sergeant-chat/dual_rank_router_core.ts"),
++}
++
++
++def replace_once(text: str, old: str, new: str, label: str) -> str:
++    count = text.count(old)
++    if count != 1:
++        raise RuntimeError(f"{label}: expected anchor exactly once, found {count}")
++    return text.replace(old, new, 1)
++
++
++def apply_route(text: str) -> str:
++    if "buildSergeantDeskContext" in text:
++        raise RuntimeError("route: SP3 already appears integrated")
++    if "SergeantRiskBrief" not in text or "riskCeilingBlocked" not in text:
++        raise RuntimeError("route: SP2 integration not found; apply SP2 first")
++    text = replace_once(
++        text,
++        'import { assessSergeantRisk, sergeantRiskCeilingBlocksIncrease } from "@/lib/sergeant-risk";\n',
++        'import { assessSergeantRisk, sergeantRiskCeilingBlocksIncrease } from "@/lib/sergeant-risk";\n'
++        'import { buildSergeantDeskContext } from "@/lib/sergeant-chat/desk_context";\n',
++        "route import",
++    )
++    anchor = '''  const riskCeilingBlocked = sergeantRiskCeilingBlocksIncrease(\n    currentPosition?.targetSleeve ?? 0,\n    appliedSleeve,\n    riskBrief,\n  );\n'''
++    new = anchor + '''  const deskContext = useMemo(\n    () => buildSergeantDeskContext({\n      book,\n      metrics: marked.metrics,\n      kills,\n      risk: riskBrief,\n      selected: selected && flag\n        ? {\n            symbol: selected.symbol,\n            btdScore: selected.btdScore,\n            confidence: selected.confidence,\n            flag,\n            currentSleevePct: (currentPosition?.targetSleeve ?? 0) * 100,\n            requestedSleevePct: appliedSleeve * 100,\n          }\n        : null,\n    }),\n    [\n      appliedSleeve, book, currentPosition?.targetSleeve, flag, kills, marked.metrics, riskBrief,\n      selected?.btdScore, selected?.confidence, selected?.symbol,\n    ],\n  );\n'''
++    text = replace_once(text, anchor, new, "route desk context")
++    text = replace_once(
++        text,
++        '        <SergeantAdvisor />\n',
++        '        <SergeantAdvisor deskContext={deskContext} />\n',
++        "route advisor prop",
++    )
++    return text
++
++
++def apply_advisor(text: str) -> str:
++    if "deskContext" in text and "SergeantDeskContext" in text:
++        raise RuntimeError("advisor: SP3 already appears integrated")
++    text = replace_once(
++        text,
++        'import { useDataset, consent } from "@/lib/data-resilience";\n',
++        'import { useDataset, consent } from "@/lib/data-resilience";\n'
++        'import type { SergeantDeskContext } from "@/lib/sergeant-chat/desk_context";\n',
++        "advisor import",
++    )
++    text = replace_once(
++        text,
++        'const starters = ["What is the BTD score?", "How do kill switches work?", "What is look-ahead bias?", "How does the paper book work?"];\n\nexport function SergeantAdvisor() {\n',
++        'const starters = ["How is my paper book?", "Why this risk posture?", "What is my paper risk ceiling?", "Stress my paper book by 20%."];\n\nexport function SergeantAdvisor({ deskContext }: { deskContext?: SergeantDeskContext | null }) {\n',
++        "advisor signature",
++    )
++    text = replace_once(
++        text,
++        '        body: JSON.stringify({ message, history: prior, requestId }),\n',
++        '        body: JSON.stringify({ message, history: prior, requestId, context: deskContext ?? null }),\n',
++        "advisor request context",
++    )
++    copy_anchor = '''        Chat is session-only unless local saving is enabled in Data tools. {storedChat.issue} Corporal explains basics; Sergeant handles deeper paper-only analysis when the private\n        engine is online. Responses do not place orders or constitute personalized investment\n        advice. No live market or news connector is enabled here.\n'''
++    copy_new = '''        Chat is session-only unless local saving is enabled in Data tools. {storedChat.issue} Corporal can explain the current deterministic paper-desk snapshot; Sergeant handles deeper paper-only analysis when the private\n        engine is online. Responses do not place orders or constitute personalized investment\n        advice. No live market or news connector is enabled here. The attached desk context excludes broker credentials and the ops log.\n'''
++    text = replace_once(text, copy_anchor, copy_new, "advisor copy")
++    return text
++
++
++def apply_api(text: str) -> str:
++    if "sanitizeSergeantDeskContext" in text:
++        raise RuntimeError("api: SP3 already appears integrated")
++    text = replace_once(
++        text,
++        'import { createDualRankRouter } from "@/lib/sergeant-chat/dual_rank_router_core";\n',
++        'import { createDualRankRouter } from "@/lib/sergeant-chat/dual_rank_router_core";\n'
++        'import { sanitizeSergeantDeskContext } from "@/lib/sergeant-chat/desk_context";\n',
++        "api import",
++    )
++    text = replace_once(
++        text,
++        '        const input = body as { message?: unknown; history?: unknown; requestId?: unknown } | null;\n',
++        '        const input = body as { message?: unknown; history?: unknown; requestId?: unknown; context?: unknown } | null;\n',
++        "api body type",
++    )
++    anchor = '''        const supplied = typeof input?.requestId === "string" ? input.requestId.trim() : "";\n        const requestId = /^[A-Za-z0-9._:-]{8,96}$/.test(supplied) ? supplied : crypto.randomUUID();\n        const reply = await router.resolve(message, input?.history, requestId);\n'''
++    new = '''        const supplied = typeof input?.requestId === "string" ? input.requestId.trim() : "";\n        const requestId = /^[A-Za-z0-9._:-]{8,96}$/.test(supplied) ? supplied : crypto.randomUUID();\n        const deskContext = sanitizeSergeantDeskContext(input?.context);\n        const reply = await router.resolve(message, input?.history, requestId, deskContext);\n'''
++    text = replace_once(text, anchor, new, "api sanitized context")
++    return text
++
++
++def apply_corporal(text: str) -> str:
++    if "contextualSergeantDeskReply" in text:
++        raise RuntimeError("corporal: SP3 already appears integrated")
++    intro = '''// Voice: calm field sergeant. No live orders. Score is not an order.\n\n'''
++    text = replace_once(
++        text,
++        intro,
++        intro + 'import { contextualSergeantDeskReply, type SergeantDeskContext } from "./desk_context";\n\n',
++        "corporal import",
++    )
++    text = replace_once(
++        text,
++        'export function corporalReply(message: string): CorporalReply {\n',
++        'export function corporalReply(message: string, context?: SergeantDeskContext | null): CorporalReply {\n',
++        "corporal signature",
++    )
++    action_anchor = '''  const meta = matchesAny(META_OR_NEGATION, q) && !matchesAny(ACTION_FOLLOWUP, q);\n  if (!meta && matchesAny(ACTION, q)) {\n'''
++    action_new = '''  const meta = matchesAny(META_OR_NEGATION, q) && !matchesAny(ACTION_FOLLOWUP, q);\n  const deskReply = contextualSergeantDeskReply(q, context);\n  if (deskReply) {\n    return base('BASIC_INFO', deskReply.message, 'deterministic_desk_context', false, false, deskReply.topic);\n  }\n  if (!meta && matchesAny(ACTION, q)) {\n'''
++    text = replace_once(text, action_anchor, action_new, "corporal desk reply")
++    return text
++
++
++def apply_router(text: str) -> str:
++    if "sanitizeSergeantDeskContext" in text:
++        raise RuntimeError("router: SP3 already appears integrated")
++    text = replace_once(
++        text,
++        "import { corporalReply, type CorporalReply } from './corporal_engine';\n",
++        "import { corporalReply, type CorporalReply } from './corporal_engine';\n"
++        "import { sanitizeSergeantDeskContext, type SergeantDeskContext } from './desk_context';\n",
++        "router import",
++    )
++    text = replace_once(
++        text,
++        "  async resolve(message: string, history: unknown, requestId?: string): Promise<SergeantReply | CorporalReply> {\n    const q = String(message ?? '').trim();\n    const safeHistory = sanitizeHistory(history);\n    const local = corporalReply(q);\n",
++        "  async resolve(message: string, history: unknown, requestId?: string, context?: unknown): Promise<SergeantReply | CorporalReply> {\n    const q = String(message ?? '').trim();\n    const safeHistory = sanitizeHistory(history);\n    const safeContext: SergeantDeskContext | null = sanitizeSergeantDeskContext(context);\n    const local = corporalReply(q, safeContext);\n",
++        "router resolve context",
++    )
++    text = replace_once(
++        text,
++        "          body: JSON.stringify({message: q, history: safeHistory}),\n",
++        "          body: JSON.stringify({\n"
++        "            message: q,\n"
++        "            history: safeHistory,\n"
++        "            deskContext: safeContext,\n"
++        "            constraints: {\n"
++        "              paperOnly: true,\n"
++        "              noBroker: true,\n"
++        "              noPortfolioMutation: true,\n"
++        "              deterministicRiskAuthoritative: true,\n"
++        "            },\n"
++        "          }),\n",
++        "router advanced body",
++    )
++    return text
++
++
++APPLIERS = {
++    "route": apply_route,
++    "advisor": apply_advisor,
++    "api": apply_api,
++    "corporal": apply_corporal,
++    "router": apply_router,
++}
++
++
++def main() -> int:
++    root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path.cwd()
++    originals: dict[str, str] = {}
++    updates: dict[str, str] = {}
++    try:
++        for key, rel in FILES.items():
++            path = root / rel
++            if not path.exists():
++                raise RuntimeError(f"missing {rel}")
++            backup = path.with_suffix(path.suffix + ".sp3.bak")
++            if backup.exists():
++                raise RuntimeError(f"backup already exists: {backup}")
++            originals[key] = path.read_text(encoding="utf-8")
++        for key in FILES:
++            updates[key] = APPLIERS[key](originals[key])
++    except RuntimeError as exc:
++        print(f"ERROR: {exc}", file=sys.stderr)
++        print("No files were changed.", file=sys.stderr)
++        return 3
++
++    # Only after every edit has validated do we create rollback copies and write.
++    for key, rel in FILES.items():
++        path = root / rel
++        shutil.copy2(path, path.with_suffix(path.suffix + ".sp3.bak"))
++    for key, rel in FILES.items():
++        (root / rel).write_text(updates[key], encoding="utf-8")
++
++    print("SP3 integrated successfully. Backups created:")
++    for rel in FILES.values():
++        print(f"- {rel}.sp3.bak")
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+--- /dev/null	2026-10-07 02:24:36.346428321 +0000
++++ /mnt/data/sergeant-sp3-savepoint/integration/SERGEANT_SP3_INTEGRATION.md	2026-10-07 02:55:33.292128610 +0000
+@@ -0,0 +1,27 @@
++# SP3 integration order
++
++SP3 assumes SP1 + SP2 are already present.
++
++Copy these new files into the repository first:
++
++- `src/lib/sergeant-chat/desk_context.ts`
++- `src/lib/sergeant-chat/desk_context.test.ts`
++
++Then from the repository root run:
++
++```bash
++python integration/apply_sergeant_sp3.py .
++```
++
++The installer edits exactly five files:
++
++- `src/routes/sergeant.tsx`
++- `src/components/btd/SergeantAdvisor.tsx`
++- `src/routes/api.sergeant-chat.ts`
++- `src/lib/sergeant-chat/corporal_engine.ts`
++- `src/lib/sergeant-chat/dual_rank_router_core.ts`
++
++Before writing, every anchor is validated. If any target has drifted, the script aborts with **no changes**.
++If validation succeeds, `.sp3.bak` rollback copies are created for all five files before any modified file is written.
++
++SP3 does not edit `src/lib/sergeant.ts`, `src/lib/btd-core.ts`, score weights, policy bands, or any broker/execution code.

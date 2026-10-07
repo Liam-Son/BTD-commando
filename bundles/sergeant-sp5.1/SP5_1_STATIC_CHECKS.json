@@ -1,0 +1,8 @@
+{
+  "unknown_reliability_forces_caution_condition": true,
+  "unknown_reliability_test_asserts_caution": true,
+  "chat_above_ceiling_explicit_no_increase": true,
+  "chat_allows_holding_or_reducing": true,
+  "above_ceiling_test_present": true,
+  "frozen_formula_unchanged": true
+}

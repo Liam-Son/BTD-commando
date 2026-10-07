@@ -1,0 +1,8 @@
+{
+  "contextId": "sergeant_desk_context_v1",
+  "posture": "REDUCE",
+  "health": 65.1,
+  "ceiling": 0,
+  "healthReply": "Desk snapshot (LIVE, paper-only): health 65.1/100, posture REDUCE, drawdown 2.00%, gross 20.0%, largest sleeve 20.0%, and deterministic new/increase ceiling 0.0% per name. SPY: BTD 72.3, input reliability 80/100, paper posture ACQUIRE, current sleeve 20.0%, typed target 10.0%. This is a client-reported local paper snapshot, not broker data or a live-order instruction.",
+  "ceilingReply": "Desk snapshot (LIVE, paper-only): deterministic per-name ceiling for any new or increased paper target is 0.0%. Current SPY paper sleeve is 20.0%. It is a safety cap, not a recommended position size. Reductions remain available even when an existing sleeve is already above the ceiling."
+}

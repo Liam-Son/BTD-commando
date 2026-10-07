@@ -1,0 +1,20 @@
+SERGEANT SP5 CHECKPOINT
+=======================
+Status: SOURCE-QUALIFIED / NOT DEPLOYED
+Baseline: c0c0a9799770a4f33440193379c833608c351b61
+Risk engine: sergeant_risk_v2
+BTD formula: btd_v1_0 (unchanged)
+Paper policy: sergeant_policy_v1 (unchanged)
+
+Includes complete SP4 bundle plus:
+- SP5_STATUS.md
+- SHADOW_INTEGRATION.json
+- SP5_SMOKE_RESULTS.json
+- SP5_FUZZ_RESULTS.json (5,000 randomized cases)
+- SP5_TYPECHECK.txt
+- GITHUB_WRITE_STATUS.json
+- integration/qualify_sergeant_sp5.py
+- integration/rollback_sergeant_sp5.py
+- integration/SP5_LIVE_ACCEPTANCE.md
+
+No production repository write, commit, merge, broker connection, or deployment was performed.

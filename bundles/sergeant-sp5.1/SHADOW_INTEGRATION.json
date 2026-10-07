@@ -1,0 +1,12 @@
+{
+  "baseline": "c0c0a9799770a4f33440193379c833608c351b61",
+  "shadowIntegration": "PASS",
+  "description": "Exact SP2 and SP3 strict string transforms replayed in-memory against current GitHub baseline.",
+  "files": {
+    "src/routes/sergeant.tsx": {"chars": 32157, "fnv32": "660807cd", "requiredMarkers": true},
+    "src/components/btd/SergeantAdvisor.tsx": {"chars": 8954, "fnv32": "49e1bcd8", "requiredMarkers": true},
+    "src/routes/api.sergeant-chat.ts": {"chars": 3451, "fnv32": "0fd75e95", "requiredMarkers": true},
+    "src/lib/sergeant-chat/corporal_engine.ts": {"chars": 23178, "fnv32": "b6d300a8", "requiredMarkers": true},
+    "src/lib/sergeant-chat/dual_rank_router_core.ts": {"chars": 11988, "fnv32": "a7a0bf99", "requiredMarkers": true}
+  }
+}

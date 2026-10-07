@@ -1,0 +1,68 @@
+--- a/src/lib/sergeant-risk.ts
++++ b/src/lib/sergeant-risk.ts
+@@ -233,7 +233,7 @@
+     if (ddUse >= 0.75) reasons.push(`Drawdown has used ${round(ddUse * 100, 0)}% of the configured limit.`);
+     if (bookHealth < 40) reasons.push(`Operational book health is low at ${bookHealth}/100.`);
+     if (paperRiskCeilingPct <= 2) reasons.push(`Safety overlay leaves only ${paperRiskCeilingPct.toFixed(1)}% paper-risk capacity per name.`);
+-  } else if (feedState !== "live" || kills.names || concentrationUse >= 0.90 || bookHealth < 70 || paperRiskCeilingPct < 10) {
++  } else if (!reliabilityKnown || feedState !== "live" || kills.names || concentrationUse >= 0.90 || bookHealth < 70 || paperRiskCeilingPct < 10) {
+     posture = "CAUTION";
+     if (feedState !== "live") reasons.push(`Feed state is ${feedState.toUpperCase()}, not live.`);
+     if (kills.names) reasons.push("Max-names limit is reached: another new paper name is blocked, but existing-name changes remain subject to the other controls.");
+--- a/src/lib/sergeant-risk.test.ts
++++ b/src/lib/sergeant-risk.test.ts
+@@ -151,6 +151,7 @@
+     expect(result.reliabilityKnown).toBe(false);
+     expect(result.inputReliability).toBe(50);
+     expect(result.paperRiskCeilingPct).toBe(10);
++    expect(result.posture).toBe("CAUTION");
+     expect(result.reasons.join(" ")).toContain("unavailable");
+   });
+ 
+--- a/src/lib/sergeant-chat/desk_context.ts
++++ b/src/lib/sergeant-chat/desk_context.ts
+@@ -295,10 +295,18 @@
+ 
+   if (/\b(can i|am i allowed to|could i)\b.{0,35}\b(increase|add|raise)\b/i.test(q)) {
+     const selected = context.selected;
+-    const state = context.risk.posture === "NO INCREASE" || context.risk.paperRiskCeilingPct <= 0
+-      ? "The current deterministic desk state blocks new or increased paper exposure."
+-      : `The desk permits only paper targets at or below the ${context.risk.paperRiskCeilingPct.toFixed(1)}% safety ceiling, subject to the existing kill controls.`;
+-    const focus = selected ? ` ${selected.symbol} is currently ${selected.currentSleevePct.toFixed(1)}% in the local paper book.` : "";
++    const ceiling = context.risk.paperRiskCeilingPct;
++    let state: string;
++    if (context.risk.posture === "NO INCREASE" || ceiling <= 0) {
++      state = "The current deterministic desk state blocks new or increased paper exposure.";
++    } else if (selected && selected.currentSleevePct >= ceiling - 1e-9) {
++      state = `No increase is permitted for ${selected.symbol}. Its current paper sleeve is ${selected.currentSleevePct.toFixed(1)}%, at or above the current ${ceiling.toFixed(1)}% safety ceiling. Holding or reducing remains possible.`;
++    } else {
++      state = `The desk permits only paper targets at or below the ${ceiling.toFixed(1)}% safety ceiling, subject to the existing kill controls.`;
++    }
++    const focus = selected && selected.currentSleevePct < ceiling - 1e-9
++      ? ` ${selected.symbol} is currently ${selected.currentSleevePct.toFixed(1)}% in the local paper book.`
++      : "";
+     return {
+       topic: "desk_increase_rule",
+       message: `${snapshotPrefix(context)} ${state}${focus} I can explain the paper rule, but chat does not change the book and this is not a personalized live-market recommendation.`,
+--- a/src/lib/sergeant-chat/desk_context.test.ts
++++ b/src/lib/sergeant-chat/desk_context.test.ts
+@@ -90,6 +90,19 @@
+     expect(reply?.message).toContain("chat does not change the book");
+   });
+ 
++  it("explicitly blocks an increase when the selected sleeve is already above the dynamic ceiling", () => {
++    const c: any = context();
++    c.selected.currentSleevePct = 20;
++    c.risk.paperRiskCeilingPct = 17;
++    c.risk.posture = "CAUTION";
++    const reply = contextualSergeantDeskReply("Can I increase this position?", c);
++    expect(reply?.topic).toBe("desk_increase_rule");
++    expect(reply?.message).toContain("No increase is permitted for SPY");
++    expect(reply?.message).toContain("20.0%");
++    expect(reply?.message).toContain("17.0%");
++    expect(reply?.message).toContain("Holding or reducing remains possible");
++  });
++
+   it("reports deterministic stress as a scenario, not a forecast", () => {
+     const c: any = context();
+     c.risk.stress = [{ id: "book_down_20", label: "All paper positions −20%", estimatedEquity: 92, estimatedLossPct: 8 }];

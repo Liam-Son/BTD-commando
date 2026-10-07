@@ -1,0 +1,11 @@
+import { assessSergeantRisk, sergeantRiskCeilingBlocksIncrease } from "./lib/sergeant-risk.js";
+import type { BookMetrics, KillState, SergeantBook } from "./lib/sergeant.js";
+const t0="2026-10-07T00:00:00.000Z";
+const book: SergeantBook={schemaVersion:2,formulaId:"btd_v1_0",policyId:"sergeant_policy_v1",cash:80,peakEquity:100,realizedPnl:0,positions:[{symbol:"SPY",name:"SPY",assetClass:"ETF",units:0.2,avgPrice:100,lastPrice:100,targetSleeve:0.2,openedAt:t0,updatedAt:t0}],log:[],kills:{maxDrawdownPct:10,maxNames:10,maxSleevePct:20,globalHalt:false},updatedAt:t0};
+const metrics: BookMetrics={equity:100,positionValue:20,grossExposure:0.2,targetGrossPct:20,drawdownPct:0,activeNames:1,maxSingleSleevePct:20,unrealizedPnl:0,realizedPnl:0};
+const kills: KillState={globalHalt:false,drawdown:false,names:false,sleeve:false,any:false,reasons:[]};
+const brief=assessSergeantRisk({book,metrics,kills,feedState:"live",inputReliability:80});
+if (!sergeantRiskCeilingBlocksIncrease(0.05,0.12,{paperRiskCeilingPct:10})) throw new Error("expected above-ceiling increase block");
+if (sergeantRiskCeilingBlocksIncrease(0.25,0.20,{paperRiskCeilingPct:10})) throw new Error("reduction must remain available");
+if (brief.engineId !== "sergeant_risk_v1") throw new Error("wrong engine id");
+console.log(JSON.stringify({posture:brief.posture,health:brief.bookHealth,ceiling:brief.paperRiskCeilingPct,stress:brief.stress},null,2));

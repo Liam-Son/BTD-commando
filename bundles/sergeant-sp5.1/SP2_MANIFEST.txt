@@ -1,0 +1,35 @@
+SERGEANT SAVEPOINT SP2 CANDIDATE
+Date: 2026-10-07
+Baseline: Liam-Son/BTD-commando main @ c0c0a9799770a4f33440193379c833608c351b61
+Parent savepoint: SP1 deterministic risk engine
+
+SP2 source additions/changes:
+  src/lib/sergeant-risk.ts
+    - adds reusable risk-ceiling increase guard with reduction escape hatch
+  src/lib/sergeant-risk.test.ts
+    - adds guardrail regression coverage
+  src/components/btd/SergeantRiskBrief.tsx
+    - Book Health / posture / ceiling / reliability / component scores / stress table
+  docs/SERGEANT_SP2.md
+  integration/SERGEANT_ROUTE_INTEGRATION.md
+  integration/apply_sergeant_sp2.py
+    - strict, idempotence-aware route integration script
+    - creates src/routes/sergeant.tsx.sp2.bak before writing
+
+SP2 intended route behavior:
+  - assess selected Sniper input reliability through deterministic risk overlay
+  - render Risk Brief + Stress Lab
+  - export JSON risk snapshot
+  - block ONLY new/increased paper target above risk ceiling
+  - preserve reductions even when current position is above ceiling
+
+UNCHANGED IN SP2:
+  btd_v1_0 formula
+  sergeant_policy_v1 score bands / raw sleeves
+  Sergeant storage schema v2
+  core paper ledger semantics
+  no-broker / no-live-order posture
+
+GitHub write state:
+  BLOCKED by connector 403 as of 2026-10-07.
+  No production repository file has been changed by this environment.

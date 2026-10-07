@@ -1,0 +1,18 @@
+import { assessSergeantRisk } from "./lib/sergeant-risk";
+import { buildSergeantDeskContext, sanitizeSergeantDeskContext, contextualSergeantDeskReply } from "./lib/sergeant-chat/desk_context";
+import type { BookMetrics, KillState, SergeantBook } from "./lib/sergeant";
+const t0="2026-10-07T00:00:00.000Z";
+const book: SergeantBook={schemaVersion:2,formulaId:"btd_v1_0",policyId:"sergeant_policy_v1",cash:80,peakEquity:100,realizedPnl:0,positions:[{symbol:"SPY",name:"SPY",assetClass:"ETF",units:0.2,avgPrice:100,lastPrice:100,targetSleeve:0.2,openedAt:t0,updatedAt:t0}],log:[],kills:{maxDrawdownPct:10,maxNames:10,maxSleevePct:20,globalHalt:false},updatedAt:t0};
+const metrics: BookMetrics={equity:100,positionValue:20,grossExposure:0.2,targetGrossPct:20,drawdownPct:2,activeNames:1,maxSingleSleevePct:20,unrealizedPnl:0,realizedPnl:0};
+const kills: KillState={globalHalt:false,drawdown:false,names:false,sleeve:false,any:false,reasons:[]};
+const risk=assessSergeantRisk({book,metrics,kills,feedState:"live",inputReliability:80});
+const ctx=buildSergeantDeskContext({book,metrics,kills,risk,selected:{symbol:"SPY",btdScore:72.3,confidence:80,flag:"ACQUIRE",currentSleevePct:20,requestedSleevePct:10},generatedAt:t0});
+const safe=sanitizeSergeantDeskContext(ctx);
+if(!safe) throw new Error("valid context rejected");
+const health=contextualSergeantDeskReply("How is my paper book?",safe);
+if(!health?.message.includes("health")) throw new Error("missing contextual health reply");
+const ceiling=contextualSergeantDeskReply("What is my paper risk ceiling?",safe);
+if(!ceiling?.message.includes("safety cap")) throw new Error("missing ceiling reply");
+const tampered:any={...ctx,source:"broker"};
+if(sanitizeSergeantDeskContext(tampered)!==null) throw new Error("invalid trust source accepted");
+console.log(JSON.stringify({contextId:safe.contextId,posture:safe.risk.posture,health:safe.risk.bookHealth,ceiling:safe.risk.paperRiskCeilingPct,healthReply:health.message,ceilingReply:ceiling.message},null,2));

@@ -1,0 +1,23 @@
+{
+  "engine": "sergeant_risk_v2",
+  "atCap": {
+    "posture": "CAUTION",
+    "health": 74.1,
+    "ceiling": 20
+  },
+  "fresh": {
+    "posture": "CLEAR",
+    "ceiling": 20
+  },
+  "down": {
+    "posture": "NO INCREASE",
+    "ceiling": 0
+  },
+  "namesOnly": {
+    "posture": "CAUTION",
+    "ceiling": 20
+  },
+  "reductionEscape": true,
+  "staleContextRejected": true,
+  "tamperedCeilingBounded": 20
+}

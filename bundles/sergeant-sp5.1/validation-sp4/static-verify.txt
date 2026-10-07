@@ -1,0 +1,5 @@
+SP4 VERIFY: PASS
+- risk engine v2 present
+- risk ceiling + desk context wiring present
+- safety ordering retained
+- no obvious live-broker path introduced in affected files

@@ -1,0 +1,40 @@
+{
+  "posture": "REDUCE",
+  "health": 71.1,
+  "ceiling": 0,
+  "stress": [
+    {
+      "id": "book_down_10",
+      "label": "All paper positions −10%",
+      "scope": "all_positions",
+      "shockPct": -10,
+      "estimatedEquity": 98,
+      "estimatedLossPct": 2
+    },
+    {
+      "id": "book_down_20",
+      "label": "All paper positions −20%",
+      "scope": "all_positions",
+      "shockPct": -20,
+      "estimatedEquity": 96,
+      "estimatedLossPct": 4
+    },
+    {
+      "id": "book_down_35",
+      "label": "All paper positions −35%",
+      "scope": "all_positions",
+      "shockPct": -35,
+      "estimatedEquity": 93,
+      "estimatedLossPct": 7
+    },
+    {
+      "id": "largest_position_down_35",
+      "label": "Largest paper position (SPY) −35%",
+      "scope": "largest_position",
+      "shockPct": -35,
+      "estimatedEquity": 93,
+      "estimatedLossPct": 7,
+      "symbol": "SPY"
+    }
+  ]
+}

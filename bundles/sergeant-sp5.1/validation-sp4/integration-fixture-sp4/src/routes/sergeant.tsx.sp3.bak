@@ -1,0 +1,17 @@
+import { SergeantAdvisor } from "@/components/btd/SergeantAdvisor";
+import { SergeantRiskBrief } from "@/components/btd/SergeantRiskBrief";
+import { assessSergeantRisk, sergeantRiskCeilingBlocksIncrease } from "@/lib/sergeant-risk";
+function X(){
+  const currentPosition:any=null; const appliedSleeve=0; const riskBrief:any={}; const book:any={}; const marked:any={metrics:{}}; const kills:any={}; const selected:any=null; const flag:any=null;
+  const riskCeilingBlocked = sergeantRiskCeilingBlocksIncrease(
+    currentPosition?.targetSleeve ?? 0,
+    appliedSleeve,
+    riskBrief,
+  );
+  return (
+    <div>
+        <SergeantAdvisor />
+        <SergeantRiskBrief brief={riskBrief}/>{riskCeilingBlocked}
+    </div>
+  );
+}

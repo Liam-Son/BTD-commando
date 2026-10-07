@@ -1,0 +1,26 @@
+import { SergeantAdvisor } from "@/components/btd/SergeantAdvisor";
+  const feedState: FeedState = error || (!isPending && assets.length === 0)
+    ? "down"
+    : data?.degraded.length
+      ? "degraded"
+      : isLive
+        ? "live"
+        : "snapshot";
+  const appliedSleeve = Math.min(1, Math.max(0, overridePct / 100));
+  const increasing = appliedSleeve > (currentPosition?.targetSleeve ?? 0) + 1e-9;
+  function exportCsv() {
+    const blob = new Blob([opsLogCsv(book.log)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sergeant-ops-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+        <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+                {(hardIncreaseBlocked || newNameBlocked || sleeveBlocked) && (
+                  <p className="mt-3 text-[12px] text-down">
+                    This increase is blocked by an active kill/cap. Lower the paper sleeve or reduce exposure first.
+                  </p>
+                )}
+                  disabled={!hydrated || hardIncreaseBlocked || newNameBlocked || sleeveBlocked || (Math.abs(appliedSleeve - suggestedSleeve) > 1e-9 && !reason.trim())}

@@ -1,0 +1,31 @@
+SERGEANT SP4 RELEASE-CANDIDATE SAVEPOINT
+Created: 2026-10-07
+Parent savepoint: SP3
+Parent ZIP SHA256: 8048263a4609b44602a24b41166bdd9336da477fcd9ee6e4e785084040a67266
+Production baseline rechecked: Liam-Son/BTD-commando main @ c0c0a9799770a4f33440193379c833608c351b61
+
+SP4 purpose:
+- regression/release hardening
+- fix the v1 false global freeze when one existing name reaches its own sleeve cap
+- fix the v1 false global freeze when only the max-names limit is reached
+- bump deterministic overlay to sergeant_risk_v2
+- tighten client-reported desk-context ceiling sanitization to <=20%
+- preserve all SP0-SP3 safety boundaries and reduction escape hatch
+
+New/changed SP4 source:
+- src/lib/sergeant-risk.ts
+- src/lib/sergeant-risk.test.ts
+- src/lib/sergeant-chat/desk_context.ts
+- src/lib/sergeant-chat/desk_context.test.ts
+- src/lib/sergeant-chat/sergeant_sp4.test.ts
+- src/components/btd/SergeantRiskBrief.tsx
+- docs/SERGEANT_SP4.md
+
+Qualification helpers:
+- integration/verify_sergeant_sp4.py
+- integration/apply_sergeant_sp4.py
+
+Important:
+- this savepoint does not modify GitHub production
+- full npm test + production build still require a real repository checkout
+- apply_sergeant_sp4.py performs those checks and rolls source back on qualification failure

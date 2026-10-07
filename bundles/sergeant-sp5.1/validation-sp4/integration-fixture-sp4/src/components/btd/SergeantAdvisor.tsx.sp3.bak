@@ -1,0 +1,23 @@
+import { useDataset, consent } from "@/lib/data-resilience";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+type Line = any;
+const starters = ["What is the BTD score?", "How do kill switches work?", "What is look-ahead bias?", "How does the paper book work?"];
+
+export function SergeantAdvisor() {
+  const storedChat:any={issue:""};
+  async function send(){
+    const message="x", prior=[], requestId="12345678";
+    await fetch("/api/sergeant-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, history: prior, requestId }),
+      });
+  }
+  return <div>
+      <div className="px-4 pt-4 text-xs leading-relaxed text-muted-foreground">
+        Chat is session-only unless local saving is enabled in Data tools. {storedChat.issue} Corporal explains basics; Sergeant handles deeper paper-only analysis when the private
+        engine is online. Responses do not place orders or constitute personalized investment
+        advice. No live market or news connector is enabled here.
+      </div>
+  </div>;
+}

@@ -1,0 +1,10 @@
+import { createDualRankRouter } from "@/lib/sergeant-chat/dual_rank_router_core";
+const router:any={resolve:async()=>({})};
+async function x(body:any){
+        const input = body as { message?: unknown; history?: unknown; requestId?: unknown } | null;
+        const message = typeof input?.message === "string" ? input.message.trim() : "";
+        const supplied = typeof input?.requestId === "string" ? input.requestId.trim() : "";
+        const requestId = /^[A-Za-z0-9._:-]{8,96}$/.test(supplied) ? supplied : crypto.randomUUID();
+        const reply = await router.resolve(message, input?.history, requestId);
+        return reply;
+}

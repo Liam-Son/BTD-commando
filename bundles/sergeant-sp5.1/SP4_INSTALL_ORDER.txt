@@ -1,0 +1,20 @@
+SERGEANT SP4 SAFE INSTALL ORDER
+
+Preferred:
+  python integration/apply_sergeant_sp4.py /path/to/BTD-commando
+
+The qualifier requires:
+- clean git checkout
+- HEAD c0c0a9799770a4f33440193379c833608c351b61
+- Node/npm dependencies installable/installed
+
+It will:
+1. copy additive SP1-SP4 source/tests/docs
+2. apply SP2 route wiring
+3. apply SP3 desk-aware chat wiring
+4. run the SP4 static verifier
+5. run npm test
+6. run npm run build
+7. leave the qualified working tree for manual /sergeant inspection and commit
+
+It will not commit, push, deploy, or connect a broker.

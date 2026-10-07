@@ -1,0 +1,16 @@
+import { corporalReply, type CorporalReply } from './corporal_engine';
+export type SergeantReply=any;
+function sanitizeHistory(x:unknown):any[]{return []}
+export class DualRankRouter {
+  async resolve(message: string, history: unknown, requestId?: string): Promise<SergeantReply | CorporalReply> {
+    const q = String(message ?? '').trim();
+    const safeHistory = sanitizeHistory(history);
+    const local = corporalReply(q);
+    const r = await fetch("https://example.test/chat", {
+          method: 'POST',
+          headers: {},
+          body: JSON.stringify({message: q, history: safeHistory}),
+        });
+    return local;
+  }
+}

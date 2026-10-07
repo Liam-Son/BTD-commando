@@ -1,0 +1,104 @@
+{
+  "healthy": {
+    "engineId": "sergeant_risk_v1",
+    "posture": "CLEAR",
+    "bookHealth": 100,
+    "paperRiskCeilingPct": 20,
+    "inputReliability": 100,
+    "reliabilityKnown": true,
+    "feedState": "live",
+    "components": {
+      "drawdownHeadroom": 100,
+      "concentrationHeadroom": 100,
+      "grossDiscipline": 100,
+      "feedQuality": 100,
+      "inputReliability": 100
+    },
+    "stress": [
+      {
+        "id": "book_down_10",
+        "label": "All paper positions −10%",
+        "scope": "all_positions",
+        "shockPct": -10,
+        "estimatedEquity": 100,
+        "estimatedLossPct": 0
+      },
+      {
+        "id": "book_down_20",
+        "label": "All paper positions −20%",
+        "scope": "all_positions",
+        "shockPct": -20,
+        "estimatedEquity": 100,
+        "estimatedLossPct": 0
+      },
+      {
+        "id": "book_down_35",
+        "label": "All paper positions −35%",
+        "scope": "all_positions",
+        "shockPct": -35,
+        "estimatedEquity": 100,
+        "estimatedLossPct": 0
+      }
+    ],
+    "reasons": [
+      "No deterministic risk overlay condition currently requires tighter paper posture."
+    ]
+  },
+  "dd2": {
+    "health": 92.5,
+    "cap": 17.9
+  },
+  "dd8": {
+    "health": 74.5,
+    "cap": 8.9
+  },
+  "feedCaps": {
+    "live": 20,
+    "snap": 15,
+    "deg": 10,
+    "down": 0
+  },
+  "missing": {
+    "health": 92.5,
+    "cap": 10
+  },
+  "stress": [
+    {
+      "id": "book_down_10",
+      "label": "All paper positions −10%",
+      "scope": "all_positions",
+      "shockPct": -10,
+      "estimatedEquity": 95,
+      "estimatedLossPct": 5
+    },
+    {
+      "id": "book_down_20",
+      "label": "All paper positions −20%",
+      "scope": "all_positions",
+      "shockPct": -20,
+      "estimatedEquity": 90,
+      "estimatedLossPct": 10
+    },
+    {
+      "id": "book_down_35",
+      "label": "All paper positions −35%",
+      "scope": "all_positions",
+      "shockPct": -35,
+      "estimatedEquity": 82.5,
+      "estimatedLossPct": 17.5
+    },
+    {
+      "id": "largest_position_down_35",
+      "label": "Largest paper position (SPY) −35%",
+      "scope": "largest_position",
+      "shockPct": -35,
+      "estimatedEquity": 82.5,
+      "estimatedLossPct": 17.5,
+      "symbol": "SPY"
+    }
+  ],
+  "tripped": {
+    "posture": "NO INCREASE",
+    "cap": 0
+  }
+}

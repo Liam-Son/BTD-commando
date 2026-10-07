@@ -1,0 +1,34 @@
+SERGEANT SP3 SAVEPOINT
+Created: 2026-10-07
+Parent savepoint: SP2
+Parent ZIP SHA256: bbf26c9111c225b28cda2f71205c353eabaf9d0cdab2b4cdcafbf4ece3268167
+Production baseline observed: Liam-Son/BTD-commando main @ c0c0a9799770a4f33440193379c833608c351b61
+
+SP3 purpose:
+- make Corporal/optional Sergeant desk-aware using sanitized deterministic paper context
+- keep all portfolio mutation outside chat
+- preserve btd_v1_0, sergeant_policy_v1, SP1 risk engine, and SP2 risk ceiling
+
+SP3 new source:
+- src/lib/sergeant-chat/desk_context.ts
+- src/lib/sergeant-chat/desk_context.test.ts
+- docs/SERGEANT_SP3.md
+
+SP3 safe integration:
+- integration/apply_sergeant_sp3.py
+- integration/SERGEANT_SP3_INTEGRATION.md
+- modifies route/advisor/API/Corporal/router only after strict anchor checks
+- creates .sp3.bak rollback files before writing
+- aborts with no changes on source drift
+
+Trust boundary:
+- client_reported_paper_snapshot only
+- API sanitizes/bounds context
+- no broker/account credentials
+- no ops log attached
+- no chat-side portfolio mutation
+- optional advanced model receives explicit paper-only/no-broker/no-mutation constraints
+
+GitHub write status:
+- connector remained read-only (403 on branch/issue writes earlier)
+- production repository was NOT modified by this savepoint build

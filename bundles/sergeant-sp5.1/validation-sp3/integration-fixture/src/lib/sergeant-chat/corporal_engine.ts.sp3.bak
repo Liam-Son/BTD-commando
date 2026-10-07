@@ -1,0 +1,18 @@
+// Corporal V6 — always-on deterministic first-line assistant for Noviark.
+// Runs in the normal website/serverless layer with no local model dependency.
+// Scope: basic finance/site help, paper-desk explanations, safe refusals, and escalation to Sergeant.
+// Voice: calm field sergeant. No live orders. Score is not an order.
+
+export type CorporalReply = any; export type CorporalStatus=any;
+const ACTION:any[]=[]; const META_OR_NEGATION:any[]=[]; const ACTION_FOLLOWUP:any[]=[]; const LIVE_OR_ADVANCED:any[]=[];
+function matchesAny(xs:any[],q:string){return false} function base(...x:any[]):any{return x}
+export function corporalReply(message: string): CorporalReply {
+ const q=message;
+  const meta = matchesAny(META_OR_NEGATION, q) && !matchesAny(ACTION_FOLLOWUP, q);
+  if (!meta && matchesAny(ACTION, q)) {
+    return base('SERGEANT_REQUIRED', 'Hold. That needs the full paper engine or the desk controls. Corporal will not change portfolio state from chat.', 'advanced_action', true, true, 'portfolio_action');
+  }
+
+  if (matchesAny(LIVE_OR_ADVANCED, q)) return base();
+ return base();
+}

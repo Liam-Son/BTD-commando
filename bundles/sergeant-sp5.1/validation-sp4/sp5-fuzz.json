@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "randomCases": 5000,
+  "invariants": [
+    "ceiling bounded",
+    "hard kills freeze",
+    "names-only scoped",
+    "feed DOWN freezes",
+    "reliability monotone",
+    "drawdown monotone",
+    "feed quality monotone",
+    "reduction escape",
+    "stress monotone"
+  ]
+}

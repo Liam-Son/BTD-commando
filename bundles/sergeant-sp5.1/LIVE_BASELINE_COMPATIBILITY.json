@@ -1,0 +1,31 @@
+{
+  "checked_at": "2026-10-07",
+  "repository": "Liam-Son/BTD-commando",
+  "baseline_commit": "c0c0a9799770a4f33440193379c833608c351b61",
+  "github_write_status": "read-only / prior branch and issue writes returned 403",
+  "sp2_expected_anchor_counts": {
+    "route_import": 1,
+    "feed_anchor": 1,
+    "increasing_anchor": 1,
+    "export_anchor": 1,
+    "grid_anchor": 1,
+    "block_anchor": 1,
+    "disabled_anchor": 1,
+    "already_applied": false
+  },
+  "sp3_expected_anchor_counts": {
+    "advisor_import": 1,
+    "advisor_signature": 1,
+    "advisor_request_body": 1,
+    "api_import": 1,
+    "api_body_type": 1,
+    "corporal_intro": 1,
+    "corporal_signature": 1,
+    "corporal_action_anchor": 1,
+    "router_import": 1,
+    "router_resolve": 1,
+    "router_advanced_body": 1,
+    "already_applied_all": false
+  },
+  "result": "SP2 and SP3 installers are anchor-compatible with the exact current GitHub baseline"
+}
