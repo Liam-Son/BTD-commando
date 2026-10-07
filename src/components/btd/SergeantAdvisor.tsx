@@ -3,53 +3,54 @@ import type { SergeantDeskContext } from "@/lib/sergeant-chat/desk_context";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 type Rank = "CORPORAL" | "SERGEANT";
-type Status = { rank: Rank; advancedAvailable: boolean; sergeantState: string; mode: string };
 type Line = { role: "user" | "assistant"; content: string; rank?: Rank; status?: string };
 const starters = ["How is my paper book?", "Why this risk posture?", "What is my paper risk ceiling?", "Stress my paper book by 20%."];
+const LOCAL_KEY = "btd-sergeant-local";
+const LOCAL_SERGEANT = "http://127.0.0.1:8765";
 
 export function SergeantAdvisor({ deskContext }: { deskContext?: SergeantDeskContext | null }) {
-  const [status, setStatus] = useState<Status>({
-    rank: "CORPORAL",
-    advancedAvailable: false,
-    sergeantState: "CHECKING",
-    mode: "BASIC",
-  });
   const storedChat = useDataset<Line[]>("chat", () => []);
   const [sessionHistory, setSessionHistory] = useState<Line[]>([]);
   const localChatEnabled = typeof window !== "undefined" && consent(storedChat.owner)?.localChat === true;
   const history = localChatEnabled ? storedChat.value : sessionHistory;
   const setHistory = localChatEnabled ? storedChat.setValue : setSessionHistory;
-  useEffect(() => { setSessionHistory([]); }, [storedChat.owner]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [localOn, setLocalOn] = useState(false);
+  const [localReady, setLocalReady] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
   const pendingId = useRef<string | null>(null);
+  useEffect(() => { setSessionHistory([]); }, [storedChat.owner]);
   useEffect(() => {
+    setLocalOn(window.localStorage.getItem(LOCAL_KEY) === "on");
+  }, []);
+  useEffect(() => {
+    if (!localOn) {
+      setLocalReady(false);
+      return;
+    }
     let alive = true;
-    const refresh = async () => {
+    const probe = async () => {
       try {
-        const response = await fetch("/api/sergeant-chat", { cache: "no-store" });
-        if (!response.ok) throw new Error("status_unavailable");
+        const response = await fetch(`${LOCAL_SERGEANT}/ready`, { cache: "no-store" });
         const data = await response.json();
-        if (alive) setStatus(data);
+        if (alive) setLocalReady(response.ok && data?.ready === true);
       } catch {
-        if (alive)
-          setStatus({
-            rank: "CORPORAL",
-            advancedAvailable: false,
-            sergeantState: "OFFLINE",
-            mode: "BASIC",
-          });
+        if (alive) setLocalReady(false);
       }
     };
-    void refresh();
-    const timer = window.setInterval(refresh, 15000);
+    void probe();
+    const timer = window.setInterval(probe, 5000);
     return () => {
       alive = false;
       window.clearInterval(timer);
     };
-  }, []);
+  }, [localOn]);
+  function setSergeant(on: boolean) {
+    setLocalOn(on);
+    window.localStorage.setItem(LOCAL_KEY, on ? "on" : "off");
+  }
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [history, busy]);
@@ -70,17 +71,31 @@ export function SergeantAdvisor({ deskContext }: { deskContext?: SergeantDeskCon
     const requestId = pendingId.current ?? crypto.randomUUID();
     pendingId.current = requestId;
     try {
-      const response = await fetch("/api/sergeant-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history: prior, requestId, context: deskContext ?? null }),
-      });
+      const response = localOn
+        ? await fetch(`${LOCAL_SERGEANT}/chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message }),
+          })
+        : await fetch("/api/sergeant-chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message,
+              history: prior,
+              requestId,
+              context: deskContext ?? null,
+              localSergeant: "off",
+            }),
+          });
       const data = await response.json();
       if (!response.ok)
         throw new Error(
-          data?.error === "rate_limited"
-            ? "Too many requests. Wait a moment, then retry."
-            : "Advisor unavailable. Please retry.",
+          localOn
+            ? "Local Sergeant refused the question."
+            : data?.error === "rate_limited"
+              ? "Too many requests. Wait a moment, then retry."
+              : "Advisor unavailable. Please retry.",
         );
       if (typeof data.message !== "string" || !["CORPORAL", "SERGEANT"].includes(data.rank))
         throw new Error("Advisor returned an invalid response.");
@@ -92,7 +107,13 @@ export function SergeantAdvisor({ deskContext }: { deskContext?: SergeantDeskCon
     } catch (cause) {
       setHistory((lines) => lines.slice(0, -1));
       setDraft(message);
-      setError(cause instanceof Error ? cause.message : "Advisor unavailable. Please retry.");
+      setError(
+        localOn
+          ? "Sergeant is on for this computer, but the local terminal is not running. Open PowerShell, cd to tools\\sergeant-local, and run: python sergeant_local.py --serve --project C:\\path\\to\\a\\real\\folder"
+          : cause instanceof Error
+            ? cause.message
+            : "Advisor unavailable. Please retry.",
+      );
     } finally {
       setBusy(false);
     }
@@ -123,16 +144,36 @@ export function SergeantAdvisor({ deskContext }: { deskContext?: SergeantDeskCon
             </h2>
           </div>
         </div>
-        <span
-          className="border border-primary/40 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-primary"
-          aria-live="polite"
-        >
-          {status.advancedAvailable
-            ? status.sergeantState === "BUSY"
-              ? "Sergeant busy · Corporal standing by"
-              : "Sergeant online"
-            : `Corporal active · Sergeant ${status.sergeantState.toLowerCase()}`}
-        </span>
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex overflow-hidden border border-primary/40 text-[10px] font-bold uppercase tracking-widest">
+            <button
+              type="button"
+              aria-pressed={!localOn}
+              onClick={() => setSergeant(false)}
+              className={`px-2 py-1 ${localOn ? "text-muted-foreground" : "bg-primary text-primary-foreground"}`}
+            >
+              Off
+            </button>
+            <button
+              type="button"
+              aria-pressed={localOn}
+              onClick={() => setSergeant(true)}
+              className={`px-2 py-1 ${localOn ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+            >
+              On
+            </button>
+          </div>
+          <span
+            className="border border-primary/40 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-primary"
+            aria-live="polite"
+          >
+            {localOn
+              ? localReady
+                ? "Sergeant on · this computer"
+                : "Sergeant on · start local terminal"
+              : "Sergeant off · this computer"}
+          </span>
+        </div>
       </div>
       <div className="px-4 pt-4 text-xs leading-relaxed text-muted-foreground">
         Chat is session-only unless local saving is enabled in Data tools. {storedChat.issue} Corporal can explain the current deterministic paper-desk snapshot; Sergeant handles deeper paper-only analysis when the private
