@@ -1,4 +1,4 @@
-// Corporal V5 — always-on deterministic first-line assistant for Noviark.
+// Corporal V6 — always-on deterministic first-line assistant for Noviark.
 // Runs in the normal website/serverless layer with no local model dependency.
 // Scope: basic finance/site help, paper-desk explanations, safe refusals, and escalation to Sergeant.
 // Voice: calm field sergeant. No live orders. Score is not an order.
@@ -37,8 +37,53 @@ const BASIC: Entry[] = [
   },
   {
     topic: 'paper_policy',
-    patterns: [/\bpaper policy\b/i, /\bsergeant_policy\b/i, /\bacquire\b/i, /\bstand down\b/i, /\bwatch\b.*\breduce\b/i, /posture bands/i],
-    answer: 'Assessment: paper policy sergeant_policy_v1 maps score bands to posture, not to live size. Rough bands: ≥65 ACQUIRE, 50–65 WATCH, 35–50 REDUCE, ≤35 STAND DOWN. Applied sleeve can be lower than the raw band. New books start with a per-name cap. Override needs a reason.'
+    patterns: [/\bpaper policy\b/i, /\bsergeant_policy\b/i, /posture bands/i, /compare score and policy/i, /score and policy/i],
+    answer: 'Assessment: Sniper score is research. sergeant_policy_v1 turns that score into paper posture only. Bands: ≥65 ACQUIRE, 50–65 WATCH, 35–50 REDUCE, ≤35 STAND DOWN. Applied sleeve can be lower than the raw band. Override needs a reason. No live ticket.'
+  },
+  {
+    topic: 'posture_acquire',
+    patterns: [/\bacquire\b/i],
+    answer: 'Assessment: ACQUIRE is the paper posture for scores ≥65 under sergeant_policy_v1. It means the desk may consider adding exposure in the paper book, not that a live buy is authorized. Caps, feed state, and kills still win.'
+  },
+  {
+    topic: 'posture_watch',
+    patterns: [/\bwatch\b(?!\s*list)/i],
+    answer: 'Assessment: WATCH is the paper posture for scores about 50–65. Hold fire on aggressive adds. Keep the name under observation, protect caps, and wait for cleaner evidence or a better setup.'
+  },
+  {
+    topic: 'posture_reduce',
+    patterns: [/\breduce\b/i],
+    answer: 'Assessment: REDUCE is the paper posture for scores about 35–50. Cut exposure or stop adding. It is risk control, not a personalized sell order for your real account.'
+  },
+  {
+    topic: 'posture_stand_down',
+    patterns: [/\bstand[- ]?down\b/i],
+    answer: 'Assessment: STAND DOWN is the paper posture for scores ≤35. No new risk. Protect the book. High drama does not create permission.'
+  },
+  {
+    topic: 'paper_book',
+    patterns: [/\bpaper book\b/i, /how does the paper book/i, /paper ledger/i, /normalized book/i],
+    answer: 'Assessment: the paper book is a local simulated ledger, usually normalized around 100 units. It logs posture, sleeves, kills, and P/L marks. It is not a broker account and cannot submit live orders.'
+  },
+  {
+    topic: 'feed_down',
+    patterns: [/\bfeed down\b/i, /stale feed/i, /degraded feed/i, /feed state/i],
+    answer: 'Assessment: feed DOWN or degraded data blocks exposure increases. Reductions can still proceed. Do not size up on a stale or partial feed.'
+  },
+  {
+    topic: 'turnover',
+    patterns: [/\bturnover\b/i],
+    answer: 'Assessment: turnover is how much of the book you trade. High turnover burns costs and can fake a pretty backtest. Report turnover with return, costs, and drawdown.'
+  },
+  {
+    topic: 'overfit',
+    patterns: [/\boverfit/i, /curve fit/i, /data mined/i],
+    answer: 'Assessment: overfit means the rules were tuned to the past sample’s noise. If you searched many variants after seeing results, label it exploratory. Demand a frozen rule and a holdout before calling it edge.'
+  },
+  {
+    topic: 'holdout',
+    patterns: [/\bholdout\b/i, /out[- ]of[- ]sample/i, /\boos\b/i, /validation split/i],
+    answer: 'Assessment: a holdout is data you did not use to pick the rule. Freeze the strategy first, then test the holdout once. Reusing holdout for tuning destroys the claim.'
   },
   {
     topic: 'kill_switches',
@@ -62,8 +107,8 @@ const BASIC: Entry[] = [
   },
   {
     topic: 'local_terminal',
-    patterns: [/sergeant local/i, /local terminal/i, /download.*sergeant/i, /tools\/sergeant-local/i],
-    answer: 'Assessment: Sergeant Local is the paper-only terminal that runs on your computer. Download the source from GitHub tools/sergeant-local, not a site binary. It reviews a local folder, refuses broker keys, and does not place orders.'
+    patterns: [/sergeant local/i, /local terminal/i, /download.*sergeant/i, /tools\/sergeant-local/i, /how do i use sergeant local/i],
+    answer: 'Assessment: open Tools → Sergeant Local, or GitHub tools/sergeant-local. Run: python sergeant_local.py --project path\\to\\folder. Commands: checklist, files, exit. Source only. No site binary. No broker keys.'
   },
   {
     topic: 'diversification',
@@ -347,6 +392,10 @@ export function corporalReply(message: string): CorporalReply {
 
   if (matchesAny(PERSONALIZED, q)) {
     return base('REFUSED', 'Negative. I can explain the concept, but I will not give a personalized buy or sell order.', 'personalized_advice', false, false, 'safety');
+  }
+
+  if (/\b(can you|do you|are you able to)\b.{0,40}\b(place|submit|send|execute)\b.{0,40}\b(trade|order)\b/i.test(q) || /\bplace a trade\b/i.test(q)) {
+    return base('REFUSED', 'Negative. I cannot place trades. This channel is paper-only and has no broker path.', 'no_trade_authority', false, false, 'safety');
   }
 
   const meta = matchesAny(META_OR_NEGATION, q) && !matchesAny(ACTION_FOLLOWUP, q);
