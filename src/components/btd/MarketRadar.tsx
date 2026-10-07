@@ -91,7 +91,8 @@ export function MarketRadar({ assets, updatedAt }: Props) {
               <tbody>
                 {top.length ? (
                   top.map((a, i) => {
-                    const sig = ratingFor(a.btdScore).label;
+                    const rating = ratingFor(a.btdScore);
+                    const sig = rating.label;
                     return (
                       <tr key={a.symbol} className="border-t border-border/70 hover:bg-primary/5">
                         <td className="tabular px-2 py-2 text-muted-foreground">{i + 1}</td>
@@ -104,17 +105,11 @@ export function MarketRadar({ assets, updatedAt }: Props) {
                         </td>
                         <td className="px-2 py-2">
                           <span
-                            className={
-                              sig === "ACQUIRE"
-                                ? "sig-acquire px-1.5 py-0.5 text-[9px]"
-                                : sig === "HOT"
-                                  ? "sig-hot px-1.5 py-0.5 text-[9px]"
-                                  : sig === "WATCH"
-                                    ? "sig-watch px-1.5 py-0.5 text-[9px]"
-                                    : sig === "TRACK"
-                                      ? "sig-track px-1.5 py-0.5 text-[9px]"
-                                      : "sig-stand px-1.5 py-0.5 text-[9px]"
-                            }
+                            className={`border border-primary/30 px-1.5 py-0.5 text-[9px] ${
+                              rating.tone === "watch" || rating.tone === "neutral"
+                                ? "text-warn"
+                                : "text-primary"
+                            }`}
                           >
                             {sig}
                           </span>

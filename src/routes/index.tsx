@@ -115,6 +115,7 @@ function Terminal() {
   const { data, pulse, isPending, error, liveUpdatedAt, isLive, isRefreshingLive, refetch } =
     useLiveRankings();
   const { user } = useAuth();
+  const [selectedIntelCategory, setSelectedIntelCategory] = useState("all");
 
   // Google sign-in returns to the site root; forward to the saved destination.
   const navigate = Route.useNavigate();
@@ -306,7 +307,10 @@ function Terminal() {
           <summary className="cursor-pointer p-3 text-xs font-bold uppercase text-primary">
             Field reference library · weather and defense
           </summary>
-          <IntelSection />
+          <IntelSection
+            activeCategory={selectedIntelCategory}
+            onSelectCategory={setSelectedIntelCategory}
+          />
         </details>
 
         {data && <FearPanel fear={data.fear} assetCount={data.assets.length} />}
