@@ -1,118 +1,99 @@
 #!/usr/bin/env python3
-"""Sergeant Local Terminal.
-
-Paper-only advisor. Reads a local project folder and answers in the terminal.
-No broker, no network, no live orders.
-"""
-
+"""Sergeant Local Terminal V2. Paper-only. No broker."""
 from __future__ import annotations
-
-import argparse
-import sys
+import argparse, re
 from pathlib import Path
+SKIP_DIRS={".git","node_modules","__pycache__",".venv","venv","dist","build",".aside"}
+CODE_SUFFIXES={".py",".ts",".tsx",".js",".mjs",".cjs",".pine",".md",".json",".csv"}
+LIVE_WORDS=("place order","submit order","broker api","api key","live trading","real money","market order","ibkr","alpaca","create_order")
 
-SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build"}
-CODE_SUFFIXES = {".py", ".ts", ".tsx", ".js", ".mjs", ".cjs", ".pine", ".md", ".json"}
-LIVE_WORDS = (
-    "place order",
-    "submit order",
-    "broker api",
-    "api key",
-    "live trading",
-    "real money",
-    "market order",
-)
-
-
-def safe_root(path: str) -> Path:
-    root = Path(path).expanduser().resolve()
+def safe_root(path:str)->Path:
+    root=Path(path).expanduser().resolve()
     if not root.exists() or not root.is_dir():
         raise SystemExit(f"Standby. Folder not found: {root}")
     return root
 
-
-def scan(root: Path, limit: int = 80) -> list[str]:
-    found: list[str] = []
+def scan(root:Path, limit:int=120)->list[str]:
+    found=[]
     for path in root.rglob("*"):
         if any(part in SKIP_DIRS for part in path.parts):
             continue
         if path.is_file() and path.suffix.lower() in CODE_SUFFIXES:
-            found.append(str(path.relative_to(root)))
-            if len(found) >= limit:
-                break
+            found.append(str(path.relative_to(root)).replace("\\","/"))
+            if len(found)>=limit: break
     return found
 
+def read_snippets(root:Path, files:list[str], max_chars:int=20000)->str:
+    chunks=[]; used=0
+    for name in files[:20]:
+        path=(root/name).resolve()
+        if root not in path.parents and path!=root: continue
+        try: text=path.read_text(encoding="utf-8", errors="replace")
+        except OSError: continue
+        piece=text[:2000]; used+=len(piece); chunks.append(f"\n## {name}\n{piece}")
+        if used>=max_chars: break
+    return "\n".join(chunks)
 
-def read_snippets(root: Path, files: list[str], max_chars: int = 12000) -> str:
-    chunks: list[str] = []
-    used = 0
-    for name in files[:12]:
-        path = (root / name).resolve()
-        if root not in path.parents and path != root:
-            continue
-        try:
-            text = path.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            continue
-        piece = text[:1500]
-        used += len(piece)
-        chunks.append(f"\n## {name}\n{piece}")
-        if used >= max_chars:
-            break
-    return "".join(chunks)
-
-
-def flags(text: str) -> list[str]:
-    lowered = text.lower()
-    notes: list[str] = []
-    if any(word in lowered for word in LIVE_WORDS):
-        notes.append("Negative. I see live-order or credential language. Strip it. This terminal stays paper-only.")
-    if "close" in lowered and "signal" in lowered and "next" not in lowered:
-        notes.append("Hold. Check that signals use completed data and fills happen on a later bar, not the same close.")
-    if "sharpe" in lowered or "cagr" in lowered:
-        notes.append("Report the costs, the benchmark, and the worst drawdown next to any return number.")
-    if "random" in lowered or "best" in lowered:
-        notes.append("If parameters were picked after seeing results, label the run exploratory. Do not call it untouched out-of-sample.")
+def flags(text:str)->list[str]:
+    lowered=text.lower(); notes=[]
+    if any(w in lowered for w in LIVE_WORDS):
+        notes.append("Negative. Live-order or credential language found. Strip it. Paper only.")
+    if "signal" in lowered and "close" in lowered and "next open" not in lowered and "next_open" not in lowered:
+        notes.append("Hold. Confirm signal uses completed data and fill is next open, not same close.")
+    if re.search(r"\b(cagr|sharpe|alpha)\b", lowered) and not re.search(r"\b(cost|bps|fee|slippage)\b", lowered):
+        notes.append("Hold. Return metrics without costs are incomplete. Add buy and sell costs.")
+    if re.search(r"\b(best|optimize|grid search|optuna|hyperparam)\b", lowered) and "out of sample" not in lowered and "holdout" not in lowered:
+        notes.append("Hold. Parameter search without a frozen holdout is exploratory, not validated edge.")
+    if "leverage" in lowered or "margin" in lowered:
+        notes.append("Hold. Leverage changes the risk contract. State max gross exposure explicitly.")
+    if "spy" in lowered and "benchmark" not in lowered and "buy and hold" not in lowered:
+        notes.append("Note. If SPY appears, compare on identical dates, capital, and costs.")
+    if "guaranteed" in lowered or "sure alpha" in lowered:
+        notes.append("Negative. No guaranteed alpha language in a research book.")
     return notes
 
+def checklist()->str:
+    return "\n".join([
+        "Assessment: paper checklist before you trust a result.",
+        "1. Rule frozen before the test window.",
+        "2. Signal on completed bar; fill next open or later.",
+        "3. Costs on buys and sells, including initial deployment.",
+        "4. Identical-date benchmark, usually dividend-aware SPY.",
+        "5. Drawdown, exposure, and turnover reported with return.",
+        "6. Holdout or era split labeled honestly.",
+        "7. No broker keys, no live path, score != order.",
+    ])
 
-def answer(question: str, folder_notes: str) -> str:
-    q = question.strip()
-    if not q:
-        return "Report in. Ask about the code, the backtest, or the risk."
-    if any(word in q.lower() for word in ("buy now", "sell now", "place order", "api key", "broker")):
+def answer(question:str, folder_notes:str, files=None)->str:
+    files=files or []; q=question.strip(); ql=q.lower()
+    if not q: return "Report in. Ask for review, checklist, costs, look-ahead, or a specific file risk."
+    if any(w in ql for w in ("buy now","sell now","place order","api key","broker login")):
         return "Negative. I do not place orders, store keys, or connect to a broker. Ask for a paper checklist instead."
-    lines = ["Assessment: paper review only. No order, no broker, no return guarantee."]
-    lines.extend(flags(q + "\n" + folder_notes))
-    if not lines[1:]:
-        lines.append("I do not see an obvious live-order request in the question. Still verify costs, data timing, and the benchmark.")
-    lines.append("Next step: write the rule, the fill time, the cost, and the benchmark before you trust a result.")
+    if ql in {"checklist","paper checklist","review checklist"}: return checklist()
+    if "look-ahead" in ql or "lookahead" in ql:
+        return "Assessment: look-ahead means using future information at decision time. Fail the test if signal and fill share the same close without a delay rule."
+    if ql.startswith("files") or ql=="list":
+        preview="\n".join(f"- {n}" for n in files[:30]) or "- none"
+        return f"Assessment: tracked files ({len(files)}).\n{preview}"
+    notes=flags(q+"\n"+folder_notes)
+    lines=["Assessment: paper review only. No order, no broker, no return guarantee.", f"Folder scan: {len(files)} files.", *notes]
+    if not notes: lines.append("No hard live-order flag in the sampled text. Still verify costs, timing, benchmark, and holdout labels.")
+    lines.append("Next step: freeze the rule, next-open fill, costs both ways, SPY on the same dates, then reread the drawdown.")
     return "\n".join(lines)
 
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Local paper-only Sergeant terminal")
-    parser.add_argument("--project", required=True, help="Local project folder to review")
-    args = parser.parse_args()
-    root = safe_root(args.project)
-    files = scan(root)
-    snippets = read_snippets(root, files)
-    print("Sergeant Local Terminal")
-    print("Paper only. Local folder only. No broker path.")
-    print(f"Folder: {root}")
-    print(f"Files seen: {len(files)}")
-    print("Type a question, or exit.")
+def main()->None:
+    p=argparse.ArgumentParser(description="Local paper-only Sergeant terminal")
+    p.add_argument("--project", required=True)
+    args=p.parse_args(); root=safe_root(args.project); files=scan(root); snippets=read_snippets(root, files)
+    print("Sergeant Local Terminal V2"); print("Paper only. Local folder only. No broker path.")
+    print(f"Folder: {root}"); print(f"Files seen: {len(files)}"); print("Commands: checklist | files | exit")
     while True:
-        try:
-            question = input("\nYou> ")
+        try: question=input("\nYou> ")
         except (EOFError, KeyboardInterrupt):
-            print("\nHold. Terminal closed.")
-            return
-        if question.strip().lower() in {"exit", "quit"}:
-            print("Hold. Terminal closed.")
-            return
-        print(answer(question, snippets))
+            print("\nHold. Terminal closed."); return
+        if question.strip().lower() in {"exit","quit"}:
+            print("Hold. Terminal closed."); return
+        print(answer(question, snippets, files))
 
-
-if __name__ == "__main__":
+if __name__=="__main__":
     main()

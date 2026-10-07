@@ -1,6 +1,7 @@
-// Corporal V4 — always-on deterministic first-line assistant for Noviark.
+// Corporal V5 — always-on deterministic first-line assistant for Noviark.
 // Runs in the normal website/serverless layer with no local model dependency.
-// Scope: basic finance/site help, safe refusals, and escalation to Sergeant.
+// Scope: basic finance/site help, paper-desk explanations, safe refusals, and escalation to Sergeant.
+// Voice: calm field sergeant. No live orders. Score is not an order.
 
 export type CorporalStatus = 'BASIC_INFO' | 'REFUSED' | 'SERGEANT_REQUIRED';
 
@@ -25,14 +26,54 @@ type Entry = {
 
 const BASIC: Entry[] = [
   {
+    topic: 'btd_score',
+    patterns: [/\bbtd\s*score\b/i, /\bscore formula\b/i, /what is the btd/i, /btd index/i],
+    answer: 'Assessment: locked formula btd_v1_0 = 0.40·Valuation + 0.25·Momentum + 0.20·Fear + 0.10·Quality + 0.05·Risk. The score ranks dip attractiveness. It is not an order, not a broker ticket, and not a return guarantee.'
+  },
+  {
+    topic: 'score_not_order',
+    patterns: [/score\s*(≠|!=|is not)\s*order/i, /score not order/i, /\broe\b/i],
+    answer: 'Assessment: score ≠ order. Sniper can flash a high score and the correct paper action can still be Stand Down if kills, stale feed, or caps block new exposure. You decide the paper fill. No live path.'
+  },
+  {
+    topic: 'paper_policy',
+    patterns: [/\bpaper policy\b/i, /\bsergeant_policy\b/i, /\bacquire\b/i, /\bstand down\b/i, /\bwatch\b.*\breduce\b/i, /posture bands/i],
+    answer: 'Assessment: paper policy sergeant_policy_v1 maps score bands to posture, not to live size. Rough bands: ≥65 ACQUIRE, 50–65 WATCH, 35–50 REDUCE, ≤35 STAND DOWN. Applied sleeve can be lower than the raw band. New books start with a per-name cap. Override needs a reason.'
+  },
+  {
+    topic: 'kill_switches',
+    patterns: [/\bkill switch/i, /\bkills?\b/i, /\bhalt now\b/i, /max dd/i, /max names/i, /max sleeve/i, /risk controls/i, /paper risk/i],
+    answer: 'Assessment: kill switches protect the paper book. Global HALT NOW freezes increases. Max drawdown, max names, and max sleeve can block new exposure while still allowing reductions. Loosening a control needs an explicit reason. Tightening can log without one.'
+  },
+  {
+    topic: 'look_ahead',
+    patterns: [/look[- ]ahead/i, /lookahead/i, /future function/i, /same[- ]close fill/i, /point[- ]in[- ]time/i],
+    answer: 'Assessment: look-ahead bias means the backtest used information that was not knowable at the decision time. Common failures: same-close signal and fill, restated fundamentals, or tuning on the full sample then calling it out-of-sample. Prefer next-open fills and frozen rules.'
+  },
+  {
+    topic: 'next_open',
+    patterns: [/next[- ]open/i, /execution timing/i, /fill timing/i],
+    answer: 'Assessment: next-open execution decides on a completed close, then fills at the following session open. It is slower and more honest than same-close fantasy fills. Costs still apply.'
+  },
+  {
+    topic: 'costs',
+    patterns: [/\btransaction costs?\b/i, /\bslippage\b/i, /\bbps\b/i, /trading costs/i],
+    answer: 'Assessment: report costs on both buys and sells, including the first deployment. A strategy that only wins before costs is not a paper candidate. Use the same cost assumptions for the strategy and the SPY benchmark.'
+  },
+  {
+    topic: 'local_terminal',
+    patterns: [/sergeant local/i, /local terminal/i, /download.*sergeant/i, /tools\/sergeant-local/i],
+    answer: 'Assessment: Sergeant Local is the paper-only terminal that runs on your computer. Download the source from GitHub tools/sergeant-local, not a site binary. It reviews a local folder, refuses broker keys, and does not place orders.'
+  },
+  {
     topic: 'diversification',
     patterns: [/\bdiversification\b/i, /분산\s*투자/i],
-    answer: 'Diversification means spreading exposure across different assets or risks so one position has less influence on the whole portfolio.'
+    answer: 'Assessment: diversification spreads exposure across assets or risk factors so one name has less control of the book. Different tickers can still carry the same risk. Overlap matters more than ticker count.'
   },
   {
     topic: 'dca',
     patterns: [/\bdca\b/i, /dollar[- ]cost averaging/i, /적립식/i],
-    answer: 'Dollar-cost averaging means investing a fixed amount on a schedule instead of trying to choose one perfect entry price.'
+    answer: 'Assessment: dollar-cost averaging invests a fixed amount on a schedule instead of hunting one perfect entry. It reduces timing drama. It does not remove market risk.'
   },
   {
     topic: 'etf',
@@ -67,22 +108,22 @@ const BASIC: Entry[] = [
   {
     topic: 'btd',
     patterns: [/\bbtd\b/i, /buy.?the.?dip/i],
-    answer: 'BTD stands for Buy-The-Dip. On Noviark, the BTD system organizes dip-related signals and context; a score is information, not an automatic instruction to buy.'
+    answer: 'Assessment: BTD means Buy-The-Dip. On this desk it is a scored research signal under btd_v1_0. High score means more dip evidence, not automatic buy authority.'
   },
   {
     topic: 'sergeant',
     patterns: [/\bsergeant\b/i, /what.*bot/i, /이\s*봇/i],
-    answer: 'Sergeant is Noviark’s advanced paper-only finance assistant. When the full engine is offline, I serve as Corporal and handle basic finance explanations and site help.'
+    answer: 'Assessment: Sergeant is the advanced paper-only advisor. Right now the private engine is often unconfigured, so I stay on duty as Corporal for basics, paper policy, and safe refusals.'
   },
   {
     topic: 'corporal',
     patterns: [/\bcorporal\b/i, /상병/i, /코퍼럴/i],
-    answer: 'Corporal is the always-on lightweight Noviark assistant. I handle basic questions while the full Sergeant engine is offline.'
+    answer: 'Assessment: Corporal is the always-on basic unit. I cover definitions, paper-desk rules, and refusals while advanced Sergeant is offline. I do not place orders.'
   },
   {
     topic: 'paper_only',
     patterns: [/\bpaper.?only\b/i, /paper trading/i, /페이퍼/i, /모의/i],
-    answer: 'Paper-only means the system can explain or simulate decisions but has no authority to place a real broker order.'
+    answer: 'Assessment: paper-only means explain and simulate. No broker keys, no live tickets, no pretend fills. If someone asks for a real order, the answer is Negative.'
   },
   {
     topic: 'credit_risk',
@@ -97,7 +138,7 @@ const BASIC: Entry[] = [
   {
     topic: 'drawdown',
     patterns: [/\bdrawdown\b/i, /낙폭/i],
-    answer: 'Drawdown is the decline from a prior portfolio or asset peak to a later trough. It is commonly used to describe downside severity.'
+    answer: 'Assessment: drawdown is the fall from a prior peak to a later trough. Paper kills can trip on max drawdown. Report it next to any return claim.'
   },
   {
     topic: 'sharpe',
@@ -293,36 +334,36 @@ export function corporalReply(message: string): CorporalReply {
   const q = String(message ?? '').trim();
 
   if (!q) {
-    return base('BASIC_INFO', 'I’m Corporal, the always-on basic assistant. Ask me a simple finance or Noviark question.', 'empty_prompt', false, false, 'help');
+    return base('BASIC_INFO', 'Report in. Ask about the BTD score, paper policy, kill switches, costs, or look-ahead risk. I stay paper-only.', 'empty_prompt', false, false, 'help');
   }
 
   if (matchesAny(INJECTION, q)) {
-    return base('REFUSED', 'I cannot reveal or override hidden system or developer instructions.', 'prompt_injection', false, false, 'safety');
+    return base('REFUSED', 'Negative. I will not reveal or override hidden system or developer instructions.', 'prompt_injection', false, false, 'safety');
   }
 
   if (matchesAny(FAKE_EXECUTION, q)) {
-    return base('REFUSED', 'I cannot claim that a real trade or order was executed. Corporal has no broker authority.', 'fake_execution', false, false, 'safety');
+    return base('REFUSED', 'Negative. I will not claim a real trade filled. Corporal has no broker authority.', 'fake_execution', false, false, 'safety');
   }
 
   if (matchesAny(PERSONALIZED, q)) {
-    return base('REFUSED', 'I can explain the relevant concepts, but I do not give personalized buy or sell instructions.', 'personalized_advice', false, false, 'safety');
+    return base('REFUSED', 'Negative. I can explain the concept, but I will not give a personalized buy or sell order.', 'personalized_advice', false, false, 'safety');
   }
 
   const meta = matchesAny(META_OR_NEGATION, q) && !matchesAny(ACTION_FOLLOWUP, q);
   if (!meta && matchesAny(ACTION, q)) {
-    return base('SERGEANT_REQUIRED', 'That request needs the full Sergeant paper-mode engine. Corporal will not change or simulate portfolio state here.', 'advanced_action', true, true, 'portfolio_action');
+    return base('SERGEANT_REQUIRED', 'Hold. That needs the full paper engine or the desk controls. Corporal will not change portfolio state from chat.', 'advanced_action', true, true, 'portfolio_action');
   }
 
   if (matchesAny(LIVE_OR_ADVANCED, q)) {
-    return base('SERGEANT_REQUIRED', 'That needs deeper analysis from Sergeant. Corporal can still explain the underlying concept in general terms.', 'advanced_or_live', true, true, 'advanced_analysis');
+    return base('SERGEANT_REQUIRED', 'Hold. That needs deeper Sergeant analysis when the private engine is online. I can still explain the general concept.', 'advanced_or_live', true, true, 'advanced_analysis');
   }
 
   if (matchesAny(LIVE_CONTEXT, q)) {
-    return base('SERGEANT_REQUIRED', 'Corporal has no live market or news feed, so I will not invent a current price, quote, result, or headline. Sergeant is required for live context when the advanced backend is online.', 'live_data_unavailable', true, true, 'live_data');
+    return base('SERGEANT_REQUIRED', 'Negative. I have no live quote feed here, so I will not invent a price or headline. Use the board data or wait for advanced Sergeant.', 'live_data_unavailable', true, true, 'live_data');
   }
 
   if (meta && matchesAny(ACTION, q)) {
-    return base('BASIC_INFO', 'You are describing or negating an action rather than asking Corporal to perform it. No portfolio state or order is being changed.', 'meta_action_explanation', false, false, 'safety');
+    return base('BASIC_INFO', 'Assessment: that is description, not an order. No portfolio state and no broker ticket changed.', 'meta_action_explanation', false, false, 'safety');
   }
 
   for (const entry of BASIC) {
@@ -331,5 +372,5 @@ export function corporalReply(message: string): CorporalReply {
     }
   }
 
-  return base('SERGEANT_REQUIRED', 'I’m Corporal, the basic always-on unit. I can handle simple finance definitions and Noviark help. This question is better handled by Sergeant when the advanced engine is online.', 'out_of_scope', true, true, 'unknown');
+  return base('SERGEANT_REQUIRED', 'Standby. I cover score, paper policy, kills, costs, and core definitions. For deeper portfolio work use the paper desk or Sergeant Local from Tools.', 'out_of_scope', true, true, 'unknown');
 }
