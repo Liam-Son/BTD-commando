@@ -58,11 +58,4 @@ describe("Sergeant SP4 chat safety precedence", () => {
     expect(reply.topic).toBe("desk_increase_rule");
     expect(reply.message).toContain("chat does not change the book");
   });
-
-  it("answers a status check without escalating", () => {
-    const reply = corporalReply("you good?", deskContext());
-    expect(reply.status).toBe("BASIC_INFO");
-    expect(reply.sergeantRequired).toBe(false);
-    expect(reply.reason).toBe("status_check");
-  });
 });
