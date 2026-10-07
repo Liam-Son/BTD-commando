@@ -3,6 +3,8 @@
 // Scope: basic finance/site help, paper-desk explanations, safe refusals, and escalation to Sergeant.
 // Voice: calm field sergeant. No live orders. Score is not an order.
 
+import { contextualSergeantDeskReply, type SergeantDeskContext } from "./desk_context";
+
 export type CorporalStatus = 'BASIC_INFO' | 'REFUSED' | 'SERGEANT_REQUIRED';
 
 export type CorporalReply = {
@@ -375,7 +377,7 @@ function base(status: CorporalStatus, message: string, reason: string, retryable
   };
 }
 
-export function corporalReply(message: string): CorporalReply {
+export function corporalReply(message: string, context?: SergeantDeskContext | null): CorporalReply {
   const q = String(message ?? '').trim();
 
   if (!q) {
@@ -399,6 +401,10 @@ export function corporalReply(message: string): CorporalReply {
   }
 
   const meta = matchesAny(META_OR_NEGATION, q) && !matchesAny(ACTION_FOLLOWUP, q);
+  const deskReply = contextualSergeantDeskReply(q, context);
+  if (deskReply) {
+    return base('BASIC_INFO', deskReply.message, 'deterministic_desk_context', false, false, deskReply.topic);
+  }
   if (!meta && matchesAny(ACTION, q)) {
     return base('SERGEANT_REQUIRED', 'Hold. That needs the full paper engine or the desk controls. Corporal will not change portfolio state from chat.', 'advanced_action', true, true, 'portfolio_action');
   }

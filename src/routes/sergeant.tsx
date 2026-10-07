@@ -7,6 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
 import { SergeantHero } from "@/components/btd/SergeantHero";
 import { SergeantAdvisor } from "@/components/btd/SergeantAdvisor";
+import { SergeantRiskBrief } from "@/components/btd/SergeantRiskBrief";
+import { assessSergeantRisk, sergeantRiskCeilingBlocksIncrease } from "@/lib/sergeant-risk";
+import { buildSergeantDeskContext } from "@/lib/sergeant-chat/desk_context";
 import {
   BTD_FORMULA_ID,
   SERGEANT_POLICY_ID,
@@ -127,8 +130,45 @@ function SergeantPage() {
       : isLive
         ? "live"
         : "snapshot";
+  const riskBrief = useMemo(
+    () => assessSergeantRisk({
+      book,
+      metrics: marked.metrics,
+      kills,
+      feedState,
+      inputReliability: selected?.confidence ?? null,
+    }),
+    [book, feedState, kills, marked.metrics, selected?.confidence],
+  );
   const appliedSleeve = Math.min(1, Math.max(0, overridePct / 100));
   const increasing = appliedSleeve > (currentPosition?.targetSleeve ?? 0) + 1e-9;
+  const riskCeilingBlocked = sergeantRiskCeilingBlocksIncrease(
+    currentPosition?.targetSleeve ?? 0,
+    appliedSleeve,
+    riskBrief,
+  );
+  const deskContext = useMemo(
+    () => buildSergeantDeskContext({
+      book,
+      metrics: marked.metrics,
+      kills,
+      risk: riskBrief,
+      selected: selected && flag
+        ? {
+            symbol: selected.symbol,
+            btdScore: selected.btdScore,
+            confidence: selected.confidence,
+            flag,
+            currentSleevePct: (currentPosition?.targetSleeve ?? 0) * 100,
+            requestedSleevePct: appliedSleeve * 100,
+          }
+        : null,
+    }),
+    [
+      appliedSleeve, book, currentPosition?.targetSleeve, flag, kills, marked.metrics, riskBrief,
+      selected?.btdScore, selected?.confidence, selected?.symbol,
+    ],
+  );
   const newNameBlocked = !currentPosition && increasing && marked.metrics.activeNames >= book.kills.maxNames;
   const hardIncreaseBlocked = increasing && (book.kills.globalHalt || kills.drawdown || kills.sleeve || feedState === "down");
   const sleeveBlocked = increasing && appliedSleeve * 100 > book.kills.maxSleevePct + 1e-9;
@@ -213,6 +253,29 @@ function SergeantPage() {
     URL.revokeObjectURL(url);
   }
 
+  function exportRiskBrief() {
+    const snapshot = {
+      createdAt: new Date().toISOString(),
+      formulaId: BTD_FORMULA_ID,
+      policyId: SERGEANT_POLICY_ID,
+      selected: selected
+        ? {
+            symbol: selected.symbol,
+            btdScore: selected.btdScore,
+            confidence: selected.confidence,
+          }
+        : null,
+      risk: riskBrief,
+    };
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sergeant-risk-brief-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <main className="min-h-screen bg-background">
       <CommandoHeader
@@ -235,7 +298,7 @@ function SergeantPage() {
       </div>
 
       <div className="mx-auto max-w-[1200px] px-4 pt-6">
-        <SergeantAdvisor />
+        <SergeantAdvisor deskContext={deskContext} />
       </div>
 
       <div id="paper-book" className="mx-auto max-w-[1200px] space-y-4 px-4 py-6">
@@ -281,6 +344,12 @@ function SergeantPage() {
             </p>
           </section>
         )}
+
+        <SergeantRiskBrief
+          brief={riskBrief}
+          selectedSymbol={selected?.symbol ?? null}
+          onExport={exportRiskBrief}
+        />
 
         <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded border border-border bg-surface p-5">
@@ -377,16 +446,18 @@ function SergeantPage() {
                   </label>
                 </div>
 
-                {(hardIncreaseBlocked || newNameBlocked || sleeveBlocked) && (
+                {(hardIncreaseBlocked || newNameBlocked || sleeveBlocked || riskCeilingBlocked) && (
                   <p className="mt-3 text-[12px] text-down">
-                    This increase is blocked by an active kill/cap. Lower the paper sleeve or reduce exposure first.
+                    {riskCeilingBlocked
+                      ? `SP2 safety overlay caps new/increased per-name paper exposure at ${riskBrief.paperRiskCeilingPct.toFixed(1)}%. Reductions remain available.`
+                      : "This increase is blocked by an active kill/cap. Lower the paper sleeve or reduce exposure first."}
                   </p>
                 )}
 
                 <button
                   type="button"
                   onClick={applyPaperPosture}
-                  disabled={!hydrated || hardIncreaseBlocked || newNameBlocked || sleeveBlocked || (Math.abs(appliedSleeve - suggestedSleeve) > 1e-9 && !reason.trim())}
+                  disabled={!hydrated || hardIncreaseBlocked || newNameBlocked || sleeveBlocked || riskCeilingBlocked || (Math.abs(appliedSleeve - suggestedSleeve) > 1e-9 && !reason.trim())}
                   className="mt-4 inline-flex rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
                   Apply + log paper posture

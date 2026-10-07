@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { createDualRankRouter } from "@/lib/sergeant-chat/dual_rank_router_core";
+import { sanitizeSergeantDeskContext } from "@/lib/sergeant-chat/desk_context";
 import {
   WebRateLimiter,
   requestClientKey,
@@ -67,13 +68,14 @@ export const Route = createFileRoute("/api/sergeant-chat")({
         } catch {
           return Response.json({ error: "invalid_json" }, { status: 400 });
         }
-        const input = body as { message?: unknown; history?: unknown; requestId?: unknown } | null;
+        const input = body as { message?: unknown; history?: unknown; requestId?: unknown; context?: unknown } | null;
         const message = typeof input?.message === "string" ? input.message.trim() : "";
         if (!message || message.length > 4000)
           return Response.json({ error: "invalid_message" }, { status: 400 });
         const supplied = typeof input?.requestId === "string" ? input.requestId.trim() : "";
         const requestId = /^[A-Za-z0-9._:-]{8,96}$/.test(supplied) ? supplied : crypto.randomUUID();
-        const reply = await router.resolve(message, input?.history, requestId);
+        const deskContext = sanitizeSergeantDeskContext(input?.context);
+        const reply = await router.resolve(message, input?.history, requestId, deskContext);
         return Response.json(reply, {
           headers: { ...noStore, "X-Noviark-Rank": reply.rank, "X-Noviark-Request-Id": requestId },
         });

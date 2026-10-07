@@ -1,12 +1,13 @@
 import { useDataset, consent } from "@/lib/data-resilience";
+import type { SergeantDeskContext } from "@/lib/sergeant-chat/desk_context";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 type Rank = "CORPORAL" | "SERGEANT";
 type Status = { rank: Rank; advancedAvailable: boolean; sergeantState: string; mode: string };
 type Line = { role: "user" | "assistant"; content: string; rank?: Rank; status?: string };
-const starters = ["What is the BTD score?", "How do kill switches work?", "What is look-ahead bias?", "How does the paper book work?"];
+const starters = ["How is my paper book?", "Why this risk posture?", "What is my paper risk ceiling?", "Stress my paper book by 20%."];
 
-export function SergeantAdvisor() {
+export function SergeantAdvisor({ deskContext }: { deskContext?: SergeantDeskContext | null }) {
   const [status, setStatus] = useState<Status>({
     rank: "CORPORAL",
     advancedAvailable: false,
@@ -72,7 +73,7 @@ export function SergeantAdvisor() {
       const response = await fetch("/api/sergeant-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history: prior, requestId }),
+        body: JSON.stringify({ message, history: prior, requestId, context: deskContext ?? null }),
       });
       const data = await response.json();
       if (!response.ok)
@@ -134,9 +135,9 @@ export function SergeantAdvisor() {
         </span>
       </div>
       <div className="px-4 pt-4 text-xs leading-relaxed text-muted-foreground">
-        Chat is session-only unless local saving is enabled in Data tools. {storedChat.issue} Corporal explains basics; Sergeant handles deeper paper-only analysis when the private
+        Chat is session-only unless local saving is enabled in Data tools. {storedChat.issue} Corporal can explain the current deterministic paper-desk snapshot; Sergeant handles deeper paper-only analysis when the private
         engine is online. Responses do not place orders or constitute personalized investment
-        advice. No live market or news connector is enabled here.
+        advice. No live market or news connector is enabled here. The attached desk context excludes broker credentials and the ops log.
       </div>
       <div
         className="mx-4 mt-4 max-h-[380px] min-h-[180px] space-y-3 overflow-y-auto rounded border border-border bg-background p-3"

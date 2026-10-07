@@ -1,4 +1,5 @@
 import { corporalReply, type CorporalReply } from './corporal_engine';
+import { sanitizeSergeantDeskContext, type SergeantDeskContext } from './desk_context';
 
 export type DualRankConfig = {
   sergeantBase?: string;
@@ -230,10 +231,11 @@ export class DualRankRouter {
     };
   }
 
-  async resolve(message: string, history: unknown, requestId?: string): Promise<SergeantReply | CorporalReply> {
+  async resolve(message: string, history: unknown, requestId?: string, context?: unknown): Promise<SergeantReply | CorporalReply> {
     const q = String(message ?? '').trim();
     const safeHistory = sanitizeHistory(history);
-    const local = corporalReply(q);
+    const safeContext: SergeantDeskContext | null = sanitizeSergeantDeskContext(context);
+    const local = corporalReply(q, safeContext);
 
     // Corporal is the deterministic first-line unit. If it can safely answer or
     // refuse locally, do not wake the slow model even when Sergeant is online.
@@ -251,7 +253,17 @@ export class DualRankRouter {
             'X-Sergeant-Deadline-Ms': String((() => { const outer=finitePositive(this.cfg.chatTimeoutMs, 300000); const headroom=Math.min(5000, Math.max(500, Math.floor(outer*0.05))); return Math.max(1000, Math.min(299000, outer-headroom)); })()),
             ...(requestId && /^[A-Za-z0-9._:-]{8,96}$/.test(requestId) ? {'Idempotency-Key': requestId} : {}),
           },
-          body: JSON.stringify({message: q, history: safeHistory}),
+          body: JSON.stringify({
+            message: q,
+            history: safeHistory,
+            deskContext: safeContext,
+            constraints: {
+              paperOnly: true,
+              noBroker: true,
+              noPortfolioMutation: true,
+              deterministicRiskAuthoritative: true,
+            },
+          }),
         }, finitePositive(this.cfg.chatTimeoutMs, 300000));
 
         if (r.ok) {
