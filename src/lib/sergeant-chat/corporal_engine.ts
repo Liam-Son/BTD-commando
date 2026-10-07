@@ -427,5 +427,9 @@ export function corporalReply(message: string, context?: SergeantDeskContext | n
     }
   }
 
+  if (/^(?:you good|u good|how are you|what'?s up|sup|hello|hi|hey|status|ping|yo|안녕|잘\s*지내)[?!.\s]*$/i.test(q)) {
+    return base('BASIC_INFO', 'Standing by. Paper-only, no broker path. Ask about the BTD score, paper policy, kill switches, costs, or the current desk snapshot.', 'status_check', false, false, 'status');
+  }
+
   return base('SERGEANT_REQUIRED', 'Standby. I cover score, paper policy, kills, costs, and core definitions. For deeper portfolio work use the paper desk or Sergeant Local from Tools.', 'out_of_scope', true, true, 'unknown');
 }
