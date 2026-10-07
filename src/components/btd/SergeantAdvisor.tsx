@@ -176,9 +176,9 @@ export function SergeantAdvisor({ deskContext }: { deskContext?: SergeantDeskCon
         </div>
       </div>
       <div className="px-4 pt-4 text-xs leading-relaxed text-muted-foreground">
-        Chat is session-only unless local saving is enabled in Data tools. {storedChat.issue} Corporal can explain the current deterministic paper-desk snapshot; Sergeant handles deeper paper-only analysis when the private
-        engine is online. Responses do not place orders or constitute personalized investment
-        advice. No live market or news connector is enabled here. The attached desk context excludes broker credentials and the ops log.
+        Off uses Corporal in this page. On uses the Sergeant program on this computer only. Start it, leave the window open, then click On:
+        <span className="mt-1 block font-mono text-[11px] text-foreground">python sergeant_local.py --serve --project C:\Users\YOU\BTD-commando</span>
+        The badge must say “Sergeant on · this computer”. Ctrl+C or Off turns it off. This browser remembers the switch. No broker, no live orders. {storedChat.issue}
       </div>
       <div
         className="mx-4 mt-4 max-h-[380px] min-h-[180px] space-y-3 overflow-y-auto rounded border border-border bg-background p-3"

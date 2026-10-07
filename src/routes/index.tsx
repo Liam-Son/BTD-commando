@@ -182,6 +182,29 @@ function Terminal() {
         />
       </div>
 
+      <section className="mx-auto max-w-[1600px] px-4 pt-4">
+        <div className="rounded border border-primary/30 bg-surface p-4">
+          <p className="text-[10px] font-bold uppercase tracking-[.25em] text-primary">Sergeant · your computer</p>
+          <h2 className="mt-1 text-lg font-bold text-foreground">How to turn Sergeant on and off</h2>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground">
+            <li>
+              Open the <Link to="/sergeant" className="text-primary">paper desk</Link>. The switch above the chat starts on <strong className="text-foreground">Off</strong>. Off is Corporal. It only explains the paper desk. It does not place orders.
+            </li>
+            <li>
+              On your own computer, download the source from GitHub and leave this window open. Use a folder that actually exists. <code className="text-foreground">path\to\your\quant\folder</code> is not a real folder.
+              <pre className="mt-2 overflow-auto rounded border border-border bg-background p-3 text-xs text-foreground">{`cd tools\\sergeant-local
+python sergeant_local.py --serve --project C:\\Users\\YOU\\BTD-commando`}</pre>
+            </li>
+            <li>
+              Click <strong className="text-foreground">On</strong>. The badge should say <span className="text-foreground">Sergeant on · this computer</span>. That program listens only on this PC, at <span className="text-foreground">127.0.0.1:8765</span>.
+            </li>
+            <li>
+              Click <strong className="text-foreground">Off</strong>, or press Ctrl+C in that window, to turn Sergeant off. The choice is saved in this browser only. Another computer has its own switch.
+            </li>
+          </ol>
+        </div>
+      </section>
+
       {data && <Ticker assets={data.assets} />}
 
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">

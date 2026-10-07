@@ -24,10 +24,16 @@
       <a href="https://github.com/Liam-Son/BTD-commando/blob/main/tools/sergeant-local/README.md">How to run</a> ·
       <a href="/">Back to Sniper</a>
     </p>
-    <h2>Run</h2>
+    <h2>Turn it on from the website</h2>
+    <ol>
+      <li>Open the <a href="/sergeant">paper desk</a>. The switch starts on Off. Off is Corporal.</li>
+      <li>On your computer, run the command below and leave the window open. Point <code>--project</code> at a folder that exists.</li>
+      <li>Click On. The badge should say “Sergeant on · this computer”.</li>
+      <li>Click Off, or press Ctrl+C, to turn it off. The switch is stored in that browser only.</li>
+    </ol>
     <pre>cd tools/sergeant-local
-python sergeant_local.py --project path/to/your/quant/folder</pre>
-    <p>Review the source before you run it. Never paste broker credentials into the prompt.</p>
+python sergeant_local.py --serve --project C:\Users\YOU\BTD-commando</pre>
+    <p>It listens only on 127.0.0.1:8765. Review the source before you run it. Never paste broker credentials into the prompt.</p>
   </div>
 </body>
   </html>

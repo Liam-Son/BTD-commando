@@ -110,7 +110,7 @@ const BASIC: Entry[] = [
   {
     topic: 'local_terminal',
     patterns: [/sergeant local/i, /local terminal/i, /download.*sergeant/i, /tools\/sergeant-local/i, /how do i use sergeant local/i],
-    answer: 'Assessment: open Tools → Sergeant Local, or GitHub tools/sergeant-local. Run: python sergeant_local.py --project path\\to\\folder. Commands: checklist, files, exit. Source only. No site binary. No broker keys.'
+    answer: 'Assessment: the paper desk has an On/Off switch for this computer. Off is Corporal. On needs this window left open: python sergeant_local.py --serve --project C:\\Users\\YOU\\BTD-commando. The badge should say Sergeant on · this computer. Ctrl+C turns it off. Source only. No broker keys.'
   },
   {
     topic: 'diversification',
