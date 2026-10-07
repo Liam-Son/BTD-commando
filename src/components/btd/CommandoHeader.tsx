@@ -93,6 +93,9 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
               <Link to="/data-tools" className="mil-tab">
                 Data tools
               </Link>
+              <a href="/sergeant-local.html" className="mil-tab">
+                Sergeant Local
+              </a>
               {tab("communication", "/communication", "Communication", ICONS.signal)}
               {tab("armory", "/armory", "Armory", ICONS.supply)}
               {tab("ops", "/ops", "Ops Log", ICONS.opsLog)}
@@ -154,6 +157,9 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
               <Link to="/data-tools" className="mil-tab">
                 Data tools
               </Link>
+              <a href="/sergeant-local.html" className="mil-tab">
+                Sergeant Local
+              </a>
               <Link to="/communication" className="mil-tab">
                 Communication
               </Link>
