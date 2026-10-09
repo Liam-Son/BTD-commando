@@ -6,30 +6,363 @@ import { AoaWonyottiLore } from "@/components/btd/AoaWonyottiLore";
 import { CoolishLore } from "@/components/btd/CoolishLore";
 import { WonyottiPerf } from "@/components/btd/WonyottiPerf";
 import { KWhaleRejectedLog } from "@/components/btd/KWhaleRejectedLog";
-import { matchingTransfers, scanConfirmedBitcoin, thresholdSats, SAMPLE_LIMIT, SAMPLE_LIMITS, type HunterProgress, type HunterScan } from "@/lib/hunter";
-export const Route = createFileRoute("/hunter")({ head: () => ({ meta: [{ title: "Hunter | BTD Commando" }, { name: "description", content: "Read-only Bitcoin confirmed-transfer reconnaissance. Sampled public explorer data, not buy signals or wallet identities." }] }), component: Hunter });
-const control = "border border-border bg-surface-2 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50";
-const utc = (seconds: number) => new Date(seconds * 1000).toISOString().replace("T", " ").replace(".000Z", " UTC");
-const btc = (sats: number) => (sats / 100000000).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 8 });
+import {
+  matchingTransfers,
+  scanConfirmedBitcoin,
+  thresholdSats,
+  SAMPLE_LIMIT,
+  SAMPLE_LIMITS,
+  type HunterProgress,
+  type HunterScan,
+} from "@/lib/hunter";
+export const Route = createFileRoute("/hunter")({
+  head: () => ({
+    meta: [
+      { title: "Hunter | BTD Commando" },
+      {
+        name: "description",
+        content:
+          "Read-only Bitcoin confirmed-transfer reconnaissance. Sampled public explorer data, not buy signals or wallet identities.",
+      },
+    ],
+  }),
+  component: Hunter,
+});
+const control =
+  "border border-border bg-surface-2 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50";
+const utc = (seconds: number) =>
+  new Date(seconds * 1000).toISOString().replace("T", " ").replace(".000Z", " UTC");
+const btc = (sats: number) =>
+  (sats / 100000000).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 8,
+  });
 function Hunter() {
- const { user } = useAuth(); const [threshold, setThreshold] = useState("100"); const [sampleLimit, setSampleLimit] = useState<number>(SAMPLE_LIMIT); const [scan, setScan] = useState<HunterScan | null>(null); const [progress, setProgress] = useState<HunterProgress | null>(null); const [loading, setLoading] = useState(false); const [error, setError] = useState<string | null>(null); const request = useRef<AbortController | null>(null);
- useEffect(() => () => { request.current?.abort(); request.current = null; }, []);
- const minimum = thresholdSats(threshold), matches = scan && minimum !== null ? matchingTransfers(scan.transfers, minimum) : [], timeoutSeconds = sampleLimit > 100 ? 60 : 30;
- async function runScan() { if (request.current || minimum === null) return; const controller = new AbortController(); request.current = controller; let timedOut = false; const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, timeoutSeconds * 1000); setLoading(true); setError(null); setScan(null); setProgress(null); try { const result = await scanConfirmedBitcoin(controller.signal, { sampleLimit, onProgress: setProgress }); if (!controller.signal.aborted && request.current === controller) setScan(result); } catch (cause) { if (request.current === controller) setError(controller.signal.aborted ? timedOut ? `Scan timed out after ${timeoutSeconds} seconds. Retry when the explorer is available.` : "Scan cancelled. No partial results published." : cause instanceof Error ? cause.message : "Explorer unavailable. Check your connection and retry."); } finally { clearTimeout(timeout); if (request.current === controller) { request.current = null; setLoading(false); } } }
- return <main className="min-h-screen bg-background"><CommandoHeader active="hunter" signedIn={!!user} status={<span>{loading ? "Recon in progress" : "Manual recon · BTC only"}</span>} /><div className="mx-auto max-w-[1400px] space-y-4 px-4 py-6">
-  <section className="mil-panel p-6">
-        <p className="text-[10px] uppercase tracking-widest text-primary">Hunter · on-chain reconnaissance</p>
-        <h1 className="pixel-title mt-2 text-4xl text-primary">Track large BTC transfers</h1>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">Observe large confirmed transactions, not whale buys. Public Bitcoin outputs cannot identify a trader, reveal intent, or prove a purchase. Hunter is separate from Ranger survival lessons and never changes BTD scores.</p>
-        <div className="mt-4 flex flex-wrap gap-2 text-xs"><span className="border border-primary/40 px-2 py-1 text-primary">BTC MAINNET · AVAILABLE</span><span className="border border-border px-2 py-1 text-muted-foreground">ETH / SOL / OTHER CHAINS · UNAVAILABLE</span></div>
-      </section>
-  <section className="mil-panel space-y-4 p-5" aria-labelledby="recon-controls"><h2 id="recon-controls" className="text-sm font-bold uppercase tracking-widest">Mission parameters</h2><div className="flex flex-wrap items-end gap-3"><div><label htmlFor="hunter-threshold" className="mb-1 block text-xs">Minimum estimated output sum (BTC)</label><input id="hunter-threshold" type="text" inputMode="decimal" value={threshold} onChange={(event) => setThreshold(event.target.value)} aria-invalid={minimum === null} aria-describedby="hunter-threshold-help" className={control + " w-52 tabular"} /></div><div><span className="mb-1 block text-xs">Threshold presets</span>{[1, 10, 100].map((value) => <button key={value} type="button" onClick={() => setThreshold(String(value))} className={control + " mr-1"}>{value} BTC</button>)}</div><div><label htmlFor="hunter-sample" className="mb-1 block text-xs">Confirmed block sample size</label><select id="hunter-sample" value={sampleLimit} onChange={(event) => setSampleLimit(Number(event.target.value))} disabled={loading} className={control}>{SAMPLE_LIMITS.map((value) => <option key={value} value={value}>{value} transactions</option>)}</select></div><button type="button" onClick={runScan} disabled={loading || minimum === null} className={control + " border-primary/60 font-semibold text-primary"}>{loading ? "Scanning confirmed block…" : "Scan confirmed BTC transfers"}</button>{loading && <button type="button" onClick={() => request.current?.abort()} className={control}>Cancel scan</button>}</div><p id="hunter-threshold-help" className={'text-xs ' + (minimum === null ? "text-warn" : "text-muted-foreground")}>{minimum === null ? "Enter a positive BTC amount up to 21,000,000 with at most 8 decimal places." : "This threshold filters only the downloaded sample. It never estimates network-wide transfer volume."}</p><p className="text-xs leading-relaxed text-muted-foreground">Manual consent: no automatic scans. Your click sends read-only, keyless requests to Blockstream Esplora from your browser, so the provider may see your IP. The scan takes the first {sampleLimit} transactions in block order, in at most 20 sequential pages. This bounded, non-random block sample is not the Bitcoin network, a live stream, or complete block coverage. No wallet uploads or trade orders.</p></section>
-  <div role="status" aria-live="polite" className="text-sm text-muted-foreground">{loading ? progress ? progress.stage === "sampling" ? `Sampling page ${progress.page} of ${progress.pages}: ${progress.sampled} of ${progress.sampleLimit} transactions.` : progress.stage === "verifying" ? "Verifying the sampled block remains on Bitcoin’s best chain." : "Fetching latest confirmed block metadata." : `Starting manual scan. Timeout: ${timeoutSeconds} seconds.` : scan ? `Scan complete: ${matches.length} sampled transactions meet the current threshold.` : !error ? "Ready for manual recon. No transfer data loaded." : ""}</div>{error && <p role="alert" className="border border-down/40 bg-down/10 p-4 text-sm text-down">{error}</p>}
-  {scan && <section className="mil-panel p-5" aria-labelledby="sample-results"><h2 id="sample-results" className="text-lg font-bold">Confirmed block #{scan.height.toLocaleString("en-US")}</h2><div className="mt-3 grid gap-3 sm:grid-cols-3"><div className="border border-border p-3"><p className="text-xs text-muted-foreground">Sample coverage</p><p className="mt-1 font-bold text-primary">{scan.sampled} / {scan.totalTransactions.toLocaleString("en-US")}</p><p className="text-xs text-muted-foreground">transactions in this block ({(scan.sampled / scan.totalTransactions * 100).toFixed(2)}%)</p></div><div className="border border-border p-3"><p className="text-xs text-muted-foreground">Excluded coinbase</p><p className="mt-1 font-bold">{scan.excludedCoinbase}</p><p className="text-xs text-muted-foreground">not treated as transfers</p></div><div className="border border-border p-3"><p className="text-xs text-muted-foreground">Best-chain check</p><p className="mt-1 font-bold text-primary">Verified at completion</p><p className="text-xs text-muted-foreground">later reorganizations remain possible</p></div></div><div className="mt-3 space-y-1 text-xs text-muted-foreground"><p>Block timestamp: {utc(scan.blockTime)} · Retrieved: {scan.fetchedAt}</p><p>Coverage describes this block sample only, not the Bitcoin network.</p><a href={'https://blockstream.info/block/' + scan.hash} target="_blank" rel="noopener noreferrer" className="inline-block break-all text-primary underline">Verify source block ↗</a></div>{matches.length === 0 ? <p className="mt-5 text-sm">No sampled transfers meet this threshold. It does not mean no large transfers occurred elsewhere in this block or network.</p> : <div className="mt-5 overflow-x-auto"><table className="w-full text-left text-xs"><caption className="mb-3 text-left text-muted-foreground">Estimated transfer size is the sum of transaction outputs, including change and possible self-transfers. It is not net movement, trading volume, buying, selling, exchange direction, or a unique whale count.</caption><thead className="border-b border-border text-muted-foreground"><tr><th scope="col" className="p-2">Transaction / public evidence</th><th scope="col" className="p-2 text-right">Estimated output sum (BTC)</th><th scope="col" className="p-2 text-right">Outputs</th><th scope="col" className="p-2">Block timestamp (UTC)</th></tr></thead><tbody>{matches.map((tx) => <tr key={tx.txid} className="border-b border-border/50"><td className="p-2"><a href={'https://blockstream.info/tx/' + tx.txid} target="_blank" rel="noopener noreferrer" aria-label={'View Bitcoin transaction ' + tx.txid} title={tx.txid} className="tabular text-primary underline">{tx.txid.slice(0, 12)}…{tx.txid.slice(-8)} ↗</a></td><td className="tabular whitespace-nowrap p-2 text-right text-primary">{btc(tx.outputSats)}</td><td className="tabular p-2 text-right">{tx.outputCount}</td><td className="tabular whitespace-nowrap p-2">{utc(tx.blockTime)}</td></tr>)}</tbody></table></div>}</section>}
-  <KWhaleRejectedLog />
-  <WonyottiPerf />
-  <CoolishLore />
-  <AoaWonyottiLore />
-  <section className="mil-panel p-5 text-sm leading-relaxed text-muted-foreground"><h2 className="mb-2 font-bold text-foreground">Rules of engagement</h2><p>A large output sum is not evidence of accumulation, a named person or institution, an exchange deposit, a buy, or a sell. Transactions can batch payments, consolidate funds, or return change. No identity or trading-direction inference is made here. Research only, not investment advice.</p><a href="https://github.com/Blockstream/esplora/blob/master/API.md" target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-xs text-primary underline">Source: Blockstream Esplora API documentation ↗</a></section>
- </div></main>;
+  const { user } = useAuth();
+  const [threshold, setThreshold] = useState("100");
+  const [sampleLimit, setSampleLimit] = useState<number>(SAMPLE_LIMIT);
+  const [scan, setScan] = useState<HunterScan | null>(null);
+  const [progress, setProgress] = useState<HunterProgress | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const request = useRef<AbortController | null>(null);
+  useEffect(
+    () => () => {
+      request.current?.abort();
+      request.current = null;
+    },
+    [],
+  );
+  const minimum = thresholdSats(threshold),
+    matches = scan && minimum !== null ? matchingTransfers(scan.transfers, minimum) : [],
+    timeoutSeconds = sampleLimit > 100 ? 60 : 30;
+  async function runScan() {
+    if (request.current || minimum === null) return;
+    const controller = new AbortController();
+    request.current = controller;
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutSeconds * 1000);
+    setLoading(true);
+    setError(null);
+    setScan(null);
+    setProgress(null);
+    try {
+      const result = await scanConfirmedBitcoin(controller.signal, {
+        sampleLimit,
+        onProgress: setProgress,
+      });
+      if (!controller.signal.aborted && request.current === controller) setScan(result);
+    } catch (cause) {
+      if (request.current === controller)
+        setError(
+          controller.signal.aborted
+            ? timedOut
+              ? `Scan timed out after ${timeoutSeconds} seconds. Retry when the explorer is available.`
+              : "Scan cancelled. No partial results published."
+            : cause instanceof Error
+              ? cause.message
+              : "Explorer unavailable. Check your connection and retry.",
+        );
+    } finally {
+      clearTimeout(timeout);
+      if (request.current === controller) {
+        request.current = null;
+        setLoading(false);
+      }
+    }
+  }
+  return (
+    <main className="min-h-screen bg-background">
+      <CommandoHeader
+        active="hunter"
+        signedIn={!!user}
+        status={<span>{loading ? "Recon in progress" : "Manual recon · BTC only"}</span>}
+      />
+      <div className="mx-auto max-w-[1400px] space-y-4 px-4 py-6">
+        <section className="mil-panel p-6">
+          <div className="mb-4 flex items-center gap-3 border-b border-border pb-4">
+            <div className="h-20 w-20 overflow-hidden border-2 border-primary/60 bg-background">
+              <img
+                src="/theme/hunter/hunter_buddy.png"
+                alt="HUNTER cyber-raven reconnaissance companion"
+                className="pixel h-full w-full object-contain"
+                loading="eager"
+              />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                HUNTER // CHAIN SCOUT
+              </p>
+              <p className="pixel-title text-xl text-primary">READ-ONLY RECON</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Observes public evidence. Never infers identity or intent.
+              </p>
+            </div>
+          </div>
+          <p className="text-[10px] uppercase tracking-widest text-primary">
+            Hunter · on-chain reconnaissance
+          </p>
+          <h1 className="pixel-title mt-2 text-4xl text-primary">Track large BTC transfers</h1>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            Observe large confirmed transactions, not whale buys. Public Bitcoin outputs cannot
+            identify a trader, reveal intent, or prove a purchase. Hunter is separate from Ranger
+            survival lessons and never changes BTD scores.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2 text-xs">
+            <span className="border border-primary/40 px-2 py-1 text-primary">
+              BTC MAINNET · AVAILABLE
+            </span>
+            <span className="border border-border px-2 py-1 text-muted-foreground">
+              ETH / SOL / OTHER CHAINS · UNAVAILABLE
+            </span>
+          </div>
+        </section>
+        <section className="mil-panel space-y-4 p-5" aria-labelledby="recon-controls">
+          <h2 id="recon-controls" className="text-sm font-bold uppercase tracking-widest">
+            Mission parameters
+          </h2>
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label htmlFor="hunter-threshold" className="mb-1 block text-xs">
+                Minimum estimated output sum (BTC)
+              </label>
+              <input
+                id="hunter-threshold"
+                type="text"
+                inputMode="decimal"
+                value={threshold}
+                onChange={(event) => setThreshold(event.target.value)}
+                aria-invalid={minimum === null}
+                aria-describedby="hunter-threshold-help"
+                className={control + " w-52 tabular"}
+              />
+            </div>
+            <div>
+              <span className="mb-1 block text-xs">Threshold presets</span>
+              {[1, 10, 100].map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setThreshold(String(value))}
+                  className={control + " mr-1"}
+                >
+                  {value} BTC
+                </button>
+              ))}
+            </div>
+            <div>
+              <label htmlFor="hunter-sample" className="mb-1 block text-xs">
+                Confirmed block sample size
+              </label>
+              <select
+                id="hunter-sample"
+                value={sampleLimit}
+                onChange={(event) => setSampleLimit(Number(event.target.value))}
+                disabled={loading}
+                className={control}
+              >
+                {SAMPLE_LIMITS.map((value) => (
+                  <option key={value} value={value}>
+                    {value} transactions
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="button"
+              onClick={runScan}
+              disabled={loading || minimum === null}
+              className={control + " border-primary/60 font-semibold text-primary"}
+            >
+              {loading ? "Scanning confirmed block…" : "Scan confirmed BTC transfers"}
+            </button>
+            {loading && (
+              <button type="button" onClick={() => request.current?.abort()} className={control}>
+                Cancel scan
+              </button>
+            )}
+          </div>
+          <p
+            id="hunter-threshold-help"
+            className={"text-xs " + (minimum === null ? "text-warn" : "text-muted-foreground")}
+          >
+            {minimum === null
+              ? "Enter a positive BTC amount up to 21,000,000 with at most 8 decimal places."
+              : "This threshold filters only the downloaded sample. It never estimates network-wide transfer volume."}
+          </p>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Manual consent: no automatic scans. Your click sends read-only, keyless requests to
+            Blockstream Esplora from your browser, so the provider may see your IP. The scan takes
+            the first {sampleLimit} transactions in block order, in at most 20 sequential pages.
+            This bounded, non-random block sample is not the Bitcoin network, a live stream, or
+            complete block coverage. No wallet uploads or trade orders.
+          </p>
+        </section>
+        <div role="status" aria-live="polite" className="text-sm text-muted-foreground">
+          {loading
+            ? progress
+              ? progress.stage === "sampling"
+                ? `Sampling page ${progress.page} of ${progress.pages}: ${progress.sampled} of ${progress.sampleLimit} transactions.`
+                : progress.stage === "verifying"
+                  ? "Verifying the sampled block remains on Bitcoin’s best chain."
+                  : "Fetching latest confirmed block metadata."
+              : `Starting manual scan. Timeout: ${timeoutSeconds} seconds.`
+            : scan
+              ? `Scan complete: ${matches.length} sampled transactions meet the current threshold.`
+              : !error
+                ? "Ready for manual recon. No transfer data loaded."
+                : ""}
+        </div>
+        {error && (
+          <p role="alert" className="border border-down/40 bg-down/10 p-4 text-sm text-down">
+            {error}
+          </p>
+        )}
+        {scan && (
+          <section className="mil-panel p-5" aria-labelledby="sample-results">
+            <h2 id="sample-results" className="text-lg font-bold">
+              Confirmed block #{scan.height.toLocaleString("en-US")}
+            </h2>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <div className="border border-border p-3">
+                <p className="text-xs text-muted-foreground">Sample coverage</p>
+                <p className="mt-1 font-bold text-primary">
+                  {scan.sampled} / {scan.totalTransactions.toLocaleString("en-US")}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  transactions in this block (
+                  {((scan.sampled / scan.totalTransactions) * 100).toFixed(2)}%)
+                </p>
+              </div>
+              <div className="border border-border p-3">
+                <p className="text-xs text-muted-foreground">Excluded coinbase</p>
+                <p className="mt-1 font-bold">{scan.excludedCoinbase}</p>
+                <p className="text-xs text-muted-foreground">not treated as transfers</p>
+              </div>
+              <div className="border border-border p-3">
+                <p className="text-xs text-muted-foreground">Best-chain check</p>
+                <p className="mt-1 font-bold text-primary">Verified at completion</p>
+                <p className="text-xs text-muted-foreground">
+                  later reorganizations remain possible
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+              <p>
+                Block timestamp: {utc(scan.blockTime)} · Retrieved: {scan.fetchedAt}
+              </p>
+              <p>Coverage describes this block sample only, not the Bitcoin network.</p>
+              <a
+                href={"https://blockstream.info/block/" + scan.hash}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block break-all text-primary underline"
+              >
+                Verify source block ↗
+              </a>
+            </div>
+            {matches.length === 0 ? (
+              <p className="mt-5 text-sm">
+                No sampled transfers meet this threshold. It does not mean no large transfers
+                occurred elsewhere in this block or network.
+              </p>
+            ) : (
+              <div className="mt-5 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <caption className="mb-3 text-left text-muted-foreground">
+                    Estimated transfer size is the sum of transaction outputs, including change and
+                    possible self-transfers. It is not net movement, trading volume, buying,
+                    selling, exchange direction, or a unique whale count.
+                  </caption>
+                  <thead className="border-b border-border text-muted-foreground">
+                    <tr>
+                      <th scope="col" className="p-2">
+                        Transaction / public evidence
+                      </th>
+                      <th scope="col" className="p-2 text-right">
+                        Estimated output sum (BTC)
+                      </th>
+                      <th scope="col" className="p-2 text-right">
+                        Outputs
+                      </th>
+                      <th scope="col" className="p-2">
+                        Block timestamp (UTC)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {matches.map((tx) => (
+                      <tr key={tx.txid} className="border-b border-border/50">
+                        <td className="p-2">
+                          <a
+                            href={"https://blockstream.info/tx/" + tx.txid}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={"View Bitcoin transaction " + tx.txid}
+                            title={tx.txid}
+                            className="tabular text-primary underline"
+                          >
+                            {tx.txid.slice(0, 12)}…{tx.txid.slice(-8)} ↗
+                          </a>
+                        </td>
+                        <td className="tabular whitespace-nowrap p-2 text-right text-primary">
+                          {btc(tx.outputSats)}
+                        </td>
+                        <td className="tabular p-2 text-right">{tx.outputCount}</td>
+                        <td className="tabular whitespace-nowrap p-2">{utc(tx.blockTime)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        )}
+        <KWhaleRejectedLog />
+        <WonyottiPerf />
+        <CoolishLore />
+        <AoaWonyottiLore />
+        <section className="mil-panel p-5 text-sm leading-relaxed text-muted-foreground">
+          <h2 className="mb-2 font-bold text-foreground">Rules of engagement</h2>
+          <p>
+            A large output sum is not evidence of accumulation, a named person or institution, an
+            exchange deposit, a buy, or a sell. Transactions can batch payments, consolidate funds,
+            or return change. No identity or trading-direction inference is made here. Research
+            only, not investment advice.
+          </p>
+          <a
+            href="https://github.com/Blockstream/esplora/blob/master/API.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-block text-xs text-primary underline"
+          >
+            Source: Blockstream Esplora API documentation ↗
+          </a>
+        </section>
+      </div>
+    </main>
+  );
 }

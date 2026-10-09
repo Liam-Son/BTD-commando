@@ -4,15 +4,17 @@ import { classify, cluster, isRecent, isRelevantIntel, parseFeed } from "../news
 
 describe("Intel category matching", () => {
   it("does not treat commodity words inside unrelated words as category matches", () => {
-    expect(classify("SEC charges boiler room operator with defrauding retail investors")).not.toContain(
-      "commodities",
-    );
+    expect(
+      classify("SEC charges boiler room operator with defrauding retail investors"),
+    ).not.toContain("commodities");
     expect(classify("Oil prices fall after inventory build")).toContain("commodities");
   });
 
   it("recognizes specialist defense and energy headlines", () => {
     expect(classify("US Air Force awards Boeing a fighter jet contract")).toContain("defense");
-    expect(classify("Pakistan weighs direct LNG imports for power plants")).toContain("commodities");
+    expect(classify("Pakistan weighs direct LNG imports for power plants")).toContain(
+      "commodities",
+    );
     expect(classify("Dogecoin gains as traders test new DeFi network")).toContain("crypto");
   });
 
@@ -64,6 +66,6 @@ describe("Intel category matching", () => {
     ]);
 
     expect(groups).toHaveLength(2);
-    expect(groups.find((group) => group.length === 2)).toBeDefined();
+    expect(groups.find((group: (typeof groups)[number]) => group.length === 2)).toBeDefined();
   });
 });

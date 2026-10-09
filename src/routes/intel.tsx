@@ -67,11 +67,24 @@ function IntelPage() {
       </div>
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
         <section className="border-b border-border pb-4">
-          <p className="pixel-title text-sm text-primary">Operations desk / field library</p>
-          <h1 className="pixel-title mt-1 text-3xl leading-none sm:text-4xl">Intel</h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Visual context for weather conditions and defense demand.
-          </p>
+          <div className="flex flex-wrap items-center gap-4">
+            <img
+              src="/theme/intel/intel_buddy.png"
+              alt="INTEL owl analyst companion"
+              className="pixel h-24 w-24 object-contain"
+              loading="eager"
+            />
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                INTEL // SIGNAL ANALYST
+              </p>
+              <p className="pixel-title text-sm text-primary">Operations desk / field library</p>
+              <h1 className="pixel-title mt-1 text-3xl leading-none sm:text-4xl">Intel</h1>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Visual context for weather conditions and defense demand.
+              </p>
+            </div>
+          </div>
         </section>
         <IntelSection activeCategory={selectedCategory} onSelectCategory={selectIntelCategory} />
         <NewsFeed
