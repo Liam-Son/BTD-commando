@@ -3,6 +3,23 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { ICONS, PixelIcon } from "@/components/btd/PixelIcon";
 
+function HeaderBuddyImage({ src, alt }: { src: string; alt: string }) {
+  const base = src.replace(/\.png$/, "");
+  return (
+    <picture>
+      <source srcSet={`${base}.avif`} type="image/avif" />
+      <source srcSet={`${base}.webp`} type="image/webp" />
+      <img
+        src={src}
+        alt={alt}
+        className="h-5 w-5 object-contain"
+        loading="eager"
+        decoding="async"
+      />
+    </picture>
+  );
+}
+
 type Props = {
   active?:
     | "sniper"
@@ -70,12 +87,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
             title="WAYFINDER navigation companion"
             aria-label="WAYFINDER navigation companion"
           >
-            <img
-              src="/theme/navigation/wayfinder_buddy.png"
-              alt="WAYFINDER"
-              className="h-5 w-5 object-contain"
-              loading="eager"
-            />
+            <HeaderBuddyImage src="/theme/navigation/wayfinder_buddy.png" alt="WAYFINDER" />
             <span className="hidden text-[9px] font-bold uppercase tracking-widest lg:inline">
               WAYFINDER
             </span>
@@ -114,12 +126,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
         </nav>
         <details className="relative md:hidden">
           <summary className="flex cursor-pointer list-none items-center gap-1.5 border border-primary/60 bg-surface px-2 py-1 text-primary [&::-webkit-details-marker]:hidden">
-            <img
-              src="/theme/navigation/wayfinder_buddy.png"
-              alt=""
-              className="h-5 w-5 object-contain"
-              loading="eager"
-            />
+            <HeaderBuddyImage src="/theme/navigation/wayfinder_buddy.png" alt="" />
             <span className="pixel-title text-base">WAYFINDER</span>
             <span className="text-[10px] text-muted-foreground">MENU</span>
           </summary>
@@ -185,12 +192,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
               title="SENTINEL system status monitor"
               aria-label="SENTINEL system status monitor"
             >
-              <img
-                src="/theme/system/sentinel_buddy.png"
-                alt="SENTINEL"
-                className="h-5 w-5 object-contain"
-                loading="eager"
-              />
+              <HeaderBuddyImage src="/theme/system/sentinel_buddy.png" alt="SENTINEL" />
               <span className="hidden sm:inline">SENTINEL</span>
             </div>
             {status}

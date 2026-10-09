@@ -25,6 +25,37 @@ const INTEL_GROUPS = [
   },
 ] as const;
 
+function IntelImage({
+  file,
+  alt,
+  className,
+  width,
+  height,
+}: {
+  file: string;
+  alt: string;
+  className: string;
+  width: number;
+  height: number;
+}) {
+  const base = `/theme/intel/${file.replace(/\.png$/, "")}`;
+  return (
+    <picture>
+      <source srcSet={`${base}.avif`} type="image/avif" />
+      <source srcSet={`${base}.webp`} type="image/webp" />
+      <img
+        src={`/theme/intel/${file}`}
+        alt={alt}
+        className={className}
+        width={width}
+        height={height}
+        loading="lazy"
+        decoding="async"
+      />
+    </picture>
+  );
+}
+
 export function IntelSection({
   activeCategory,
   onSelectCategory,
@@ -56,14 +87,12 @@ export function IntelSection({
             aria-label={group.title}
           >
             <h3 className="pixel-title text-lg text-primary md:hidden">{group.title}</h3>
-            <img
-              src={`/theme/intel/${group.panel}`}
+            <IntelImage
+              file={group.panel}
               alt={`${group.title}. ${group.summary}`}
               className="pixel hidden h-auto w-full md:block"
               width={340}
               height={250}
-              loading="lazy"
-              decoding="async"
             />
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
               {group.items.map(([label, file, category]) => (
@@ -79,14 +108,12 @@ export function IntelSection({
                       : "border-transparent hover:border-primary/60"
                   }`}
                 >
-                  <img
-                    src={`/theme/intel/${file}`}
+                  <IntelImage
+                    file={file}
                     alt=""
                     className="pixel block h-auto w-full"
                     width={200}
                     height={250}
-                    loading="lazy"
-                    decoding="async"
                   />
                 </button>
               ))}
