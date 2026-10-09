@@ -105,12 +105,19 @@ function Hunter() {
         <section className="mil-panel p-6">
           <div className="mb-4 flex items-center gap-3 border-b border-border pb-4">
             <div className="h-20 w-20 overflow-hidden border-2 border-primary/60 bg-background">
-              <img
-                src="/theme/hunter/hunter_buddy.png"
-                alt="HUNTER cyber-raven reconnaissance companion"
-                className="pixel h-full w-full object-contain"
-                loading="eager"
-              />
+              <picture>
+                <source srcSet="/theme/hunter/hunter_buddy.avif" type="image/avif" />
+                <source srcSet="/theme/hunter/hunter_buddy.webp" type="image/webp" />
+                <img
+                  src="/theme/hunter/hunter_buddy.png"
+                  alt="HUNTER cyber-raven reconnaissance companion"
+                  width={1920}
+                  height={1920}
+                  className="pixel h-full w-full object-contain"
+                  loading="eager"
+                  decoding="async"
+                />
+              </picture>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">

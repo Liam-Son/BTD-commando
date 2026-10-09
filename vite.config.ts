@@ -13,6 +13,7 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    // @ts-expect-error Vitest extends Vite's config with a test-only field.
     test: {
       exclude: [
         "**/node_modules/**",

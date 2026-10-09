@@ -68,12 +68,19 @@ function IntelPage() {
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6">
         <section className="border-b border-border pb-4">
           <div className="flex flex-wrap items-center gap-4">
-            <img
-              src="/theme/intel/intel_buddy.png"
-              alt="INTEL owl analyst companion"
-              className="pixel h-24 w-24 object-contain"
-              loading="eager"
-            />
+            <picture>
+              <source srcSet="/theme/intel/intel_buddy.avif" type="image/avif" />
+              <source srcSet="/theme/intel/intel_buddy.webp" type="image/webp" />
+              <img
+                src="/theme/intel/intel_buddy.png"
+                alt="INTEL owl analyst companion"
+                width={1920}
+                height={1920}
+                className="pixel h-24 w-24 object-contain"
+                loading="eager"
+                decoding="async"
+              />
+            </picture>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 INTEL // SIGNAL ANALYST
