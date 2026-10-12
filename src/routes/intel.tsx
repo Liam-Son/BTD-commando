@@ -51,6 +51,7 @@ function IntelPage() {
       <CommandoHeader active="intel" signedIn={!!user} status={<span>Intel {newsStatus}</span>} />
       <div className="mx-auto max-w-[1600px] px-4 pt-4">
         <DataStatus
+          className="min-h-[68px]"
           state={dataState}
           detail={
             dataState === "offline"

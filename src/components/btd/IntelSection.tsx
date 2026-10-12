@@ -31,20 +31,28 @@ function IntelImage({
   className,
   width,
   height,
+  responsiveWidths,
+  sizes,
 }: {
   file: string;
   alt: string;
   className: string;
   width: number;
   height: number;
+  responsiveWidths?: readonly number[];
+  sizes?: string;
 }) {
   const base = `/theme/intel/${file.replace(/\.png$/, "")}`;
+  const srcSet = (extension: string) =>
+    responsiveWidths?.map((value) => `${base}-${value}.${extension} ${value}w`).join(", ");
   return (
     <picture>
-      <source srcSet={`${base}.avif`} type="image/avif" />
-      <source srcSet={`${base}.webp`} type="image/webp" />
+      <source srcSet={srcSet("avif") ?? `${base}.avif`} sizes={sizes} type="image/avif" />
+      <source srcSet={srcSet("webp") ?? `${base}.webp`} sizes={sizes} type="image/webp" />
       <img
         src={`/theme/intel/${file}`}
+        srcSet={srcSet("png")}
+        sizes={sizes}
         alt={alt}
         className={className}
         width={width}
@@ -102,7 +110,7 @@ export function IntelSection({
                   aria-label={`Show ${category} intelligence for ${label}`}
                   aria-pressed={activeCategory === category}
                   onClick={() => onSelectCategory(category)}
-                  className={`w-full overflow-hidden border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
+                  className={`aspect-[4/5] w-full overflow-hidden border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
                     activeCategory === category
                       ? "border-primary ring-1 ring-primary"
                       : "border-transparent hover:border-primary/60"
@@ -114,6 +122,8 @@ export function IntelSection({
                     className="pixel block h-auto w-full"
                     width={200}
                     height={250}
+                    responsiveWidths={[200, 340, 560]}
+                    sizes="(min-width: 1280px) 200px, (min-width: 640px) 30vw, 45vw"
                   />
                 </button>
               ))}

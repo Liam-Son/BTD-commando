@@ -69,6 +69,7 @@ export function NewsFeed({
   const [error, setError] = useState("");
   const [health, setHealth] = useState<Record<string, SourceHealth>>({});
   const [fetchedAt, setFetchedAt] = useState<number | null>(null);
+  const [visibleCount, setVisibleCount] = useState(30);
   const controllerRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
 
@@ -165,6 +166,7 @@ export function NewsFeed({
       ? new Date(right.publishedAt).getTime() - new Date(left.publishedAt).getTime()
       : right.attentionScore - left.attentionScore,
   );
+  const visible = shown.slice(0, visibleCount);
   const criticalCount = items.filter((item) => item.severity === "critical").length;
   const categoryCounts = items.reduce<Record<string, number>>((counts, item) => {
     for (const category of item.categories) counts[category] = (counts[category] ?? 0) + 1;
@@ -172,10 +174,14 @@ export function NewsFeed({
   }, {});
   const normalizedSearch = normalizeIntelSearch(search);
 
+  useEffect(() => {
+    setVisibleCount(30);
+  }, [filter, search, sort]);
+
   return (
     <section
       id="news-intelligence"
-      className="mil-panel scroll-mt-24 p-4 sm:p-5"
+      className="mil-panel min-h-[32rem] scroll-mt-24 p-4 sm:p-5 [content-visibility:auto] [contain-intrinsic-size:0_1200px]"
       aria-labelledby="intel-feed-title"
     >
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-3">
@@ -304,14 +310,14 @@ export function NewsFeed({
       )}
       {loading && !items.length ? (
         <DataStatus
-          className="mt-3"
+          className="mt-3 min-h-24"
           state="loading"
           detail="Waiting for the verified headlines provider to respond."
           sources="External headlines"
         />
       ) : (
         <div className="mt-3 divide-y divide-border">
-          {shown.map((item) => (
+          {visible.map((item) => (
             <a
               key={item.id}
               href={item.url}
@@ -387,6 +393,20 @@ export function NewsFeed({
                   Show all {items.length} loaded stories
                 </button>
               )}
+            </div>
+          )}
+          {visible.length < shown.length && (
+            <div className="border-t border-border py-4 text-center">
+              <p className="text-xs text-muted-foreground">
+                Showing {visible.length} of {shown.length} loaded stories.
+              </p>
+              <button
+                type="button"
+                onClick={() => setVisibleCount((count) => count + 30)}
+                className="mt-2 border border-primary/50 px-3 py-1.5 text-xs font-bold uppercase text-primary hover:bg-primary/10"
+              >
+                Load more stories
+              </button>
             </div>
           )}
         </div>
