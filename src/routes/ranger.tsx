@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ICONS, PixelIcon } from "@/components/btd/PixelIcon";
 import { CommandoHeader } from "@/components/btd/CommandoHeader";
+import { ResponsiveBuddyImage } from "@/components/btd/ResponsiveBuddyImage";
 import { useAuth } from "@/hooks/useAuth";
 import { calculateConcentrationStress, calculateDrawdown } from "@/lib/ranger-training";
 
@@ -107,19 +108,14 @@ function RangerPage() {
             </div>
           </div>
           <div className="flex items-center gap-3 border border-primary/30 bg-surface p-4">
-            <picture>
-              <source srcSet="/theme/ranger/ranger_buddy.avif" type="image/avif" />
-              <source srcSet="/theme/ranger/ranger_buddy.webp" type="image/webp" />
-              <img
-                src="/theme/ranger/ranger_buddy.png"
-                alt="RANGER wilderness instructor"
-                width={1920}
-                height={1920}
-                className="pixel h-24 w-24 object-contain"
-                loading="eager"
-                decoding="async"
-              />
-            </picture>
+            <ResponsiveBuddyImage
+              src="/theme/ranger/ranger_buddy.png"
+              alt="RANGER wilderness instructor"
+              sizes="96px"
+              className="pixel h-24 w-24 object-contain"
+              loading="eager"
+              decoding="async"
+            />
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 RANGER // FIELD GUIDE

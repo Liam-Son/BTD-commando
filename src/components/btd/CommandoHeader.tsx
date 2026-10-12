@@ -2,21 +2,18 @@ import { useCloudSync } from "@/lib/data-resilience";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { ICONS, PixelIcon } from "@/components/btd/PixelIcon";
+import { ResponsiveBuddyImage } from "@/components/btd/ResponsiveBuddyImage";
 
 function HeaderBuddyImage({ src, alt }: { src: string; alt: string }) {
-  const base = src.replace(/\.png$/, "");
   return (
-    <picture>
-      <source srcSet={`${base}.avif`} type="image/avif" />
-      <source srcSet={`${base}.webp`} type="image/webp" />
-      <img
-        src={src}
-        alt={alt}
-        className="h-5 w-5 object-contain"
-        loading="eager"
-        decoding="async"
-      />
-    </picture>
+    <ResponsiveBuddyImage
+      src={src}
+      alt={alt}
+      sizes="20px"
+      className="h-5 w-5 object-contain"
+      loading="eager"
+      decoding="async"
+    />
   );
 }
 
