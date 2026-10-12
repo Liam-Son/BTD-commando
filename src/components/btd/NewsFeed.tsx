@@ -193,7 +193,7 @@ export function NewsFeed({
             News intelligence
           </h2>
         </div>
-        <div className="text-right text-xs text-muted-foreground">
+        <div className="text-right text-xs text-muted-foreground sm:min-w-[18rem]">
           <DataStatus
             compact
             label="INTEL"
@@ -226,7 +226,7 @@ export function NewsFeed({
               type="button"
               aria-pressed={filter === option}
               onClick={() => onFilterChange(option)}
-              className={`border px-2 py-1 text-[10px] font-bold uppercase ${filter === option ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground"}`}
+              className={`min-w-[5.5rem] border px-2 py-1 text-center text-[10px] font-bold uppercase ${filter === option ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground"}`}
             >
               {option}
               <span className="ml-1 tabular opacity-60">
