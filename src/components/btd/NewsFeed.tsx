@@ -173,6 +173,12 @@ export function NewsFeed({
     return counts;
   }, {});
   const normalizedSearch = normalizeIntelSearch(search);
+  const topSignal = shown[0]?.headline ?? "Awaiting verified headlines";
+  const sourceSummary = loading
+    ? "SYNCING"
+    : sourceCount
+      ? `${healthyCount}/${sourceCount} ONLINE`
+      : "NO DATA";
 
   useEffect(() => {
     setVisibleCount(30);
@@ -193,10 +199,10 @@ export function NewsFeed({
             News intelligence
           </h2>
         </div>
-        <div className="text-right text-xs text-muted-foreground sm:min-w-[18rem]">
+        <div className="text-right text-xs text-muted-foreground sm:min-h-[4.5rem] sm:min-w-[18rem]">
           <DataStatus
             compact
-            label="INTEL"
+            label="NEWS"
             state={loading ? "loading" : error ? "offline" : items.length ? "live" : "empty"}
           />
           <p>
@@ -218,8 +224,33 @@ export function NewsFeed({
         10% corroboration, 10% source weighting), not a probability, verified-truth rating, profit
         expectation, or buy/sell signal. Categories are keyword tags and may overlap.
       </p>
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Intel mission brief">
+        <div className="min-h-16 border border-border bg-background/40 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Stories</p>
+          <p className="mt-1 tabular text-lg font-semibold text-primary">{items.length}</p>
+        </div>
+        <div className="min-h-16 border border-border bg-background/40 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Critical</p>
+          <p
+            className={`mt-1 tabular text-lg font-semibold ${criticalCount ? "text-down" : "text-primary"}`}
+          >
+            {criticalCount}
+          </p>
+        </div>
+        <div className="min-h-16 border border-border bg-background/40 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Sources</p>
+          <p className="mt-1 tabular text-sm font-semibold text-primary">{sourceSummary}</p>
+        </div>
+        <div className="min-h-16 border border-border bg-background/40 px-3 py-2 sm:col-span-1">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Top signal</p>
+          <p className="mt-1 line-clamp-2 text-xs font-semibold text-foreground">{topSignal}</p>
+        </div>
+      </div>
       <div className="mt-4 flex flex-wrap items-end gap-2">
-        <div className="flex flex-wrap gap-1" aria-label="Filter intelligence by category">
+        <div
+          className="flex w-full flex-nowrap gap-1 overflow-x-auto pb-1 sm:w-auto sm:flex-wrap sm:overflow-visible sm:pb-0"
+          aria-label="Filter intelligence by category"
+        >
           {FILTERS.map((option) => (
             <button
               key={option}

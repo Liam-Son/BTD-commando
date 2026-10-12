@@ -33,6 +33,16 @@ function IntelPage() {
         : isLive
           ? "live"
           : "snapshot";
+  const rankingStatus =
+    dataState === "loading"
+      ? "SYNCING"
+      : dataState === "offline"
+        ? "OFFLINE"
+        : dataState === "empty"
+          ? "NO DATA"
+          : dataState === "live"
+            ? "LIVE"
+            : "SNAPSHOT";
 
   const selectIntelCategory = useCallback((category: string) => {
     setSelectedCategory(category);
@@ -48,10 +58,19 @@ function IntelPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <CommandoHeader active="intel" signedIn={!!user} status={<span>Intel {newsStatus}</span>} />
+      <CommandoHeader
+        active="intel"
+        signedIn={!!user}
+        status={
+          <span>
+            Rankings {rankingStatus} · News {newsStatus}
+          </span>
+        }
+      />
       <div className="mx-auto max-w-[1600px] px-4 pt-4">
         <DataStatus
           className="min-h-[68px]"
+          label="RANKINGS"
           state={dataState}
           detail={
             dataState === "offline"

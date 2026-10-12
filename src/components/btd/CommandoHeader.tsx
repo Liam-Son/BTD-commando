@@ -183,7 +183,7 @@ export function CommandoHeader({ active = "sniper", status, signedIn }: Props) {
           </div>
         </details>
         {status ? (
-          <div className="flex w-full flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground md:w-auto">
+          <div className="flex w-full flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground md:min-w-[19rem] md:w-auto md:flex-nowrap md:whitespace-nowrap">
             <div
               className="flex items-center gap-1 border border-primary/30 bg-surface px-1.5 py-0.5 text-primary"
               title="SENTINEL system status monitor"
